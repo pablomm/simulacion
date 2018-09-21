@@ -30,7 +30,7 @@ generador <- function(n,lambda=1) {
 }
 
 n <- 10000 # Numero de muestras a generar
-lambda <- 7 # Parametro lambda de la poisson
+lambda <- 9 # Parametro lambda de la poisson
 
 muestra <- generador(n,lambda)
 
@@ -41,7 +41,7 @@ print(mean(muestra))
 print(var(muestra))
 
 # Histograma de la muestra y funcion de masa de la poisson
-histograma <- hist(muestra, prob=T, main=paste("Poisson(",lambda,")", sep=""))
+histograma <- hist(muestra, prob=T, main=paste("Poisson(",lambda,")", sep=""), breaks=max(muestra)+1)
 
 plot(histograma$breaks[-length(histograma$breaks)], histograma$density,type='h',
      main=paste("Poisson(",lambda,")",sep=""),xlab = "",ylab="")
