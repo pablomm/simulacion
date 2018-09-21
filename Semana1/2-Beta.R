@@ -125,7 +125,7 @@ generadorBeta24_inversa <- function(n) { Finversa(runif(n))}
 
 # Puede tardar para valores de n grande
 muestraInversa <- generadorBeta24_inversa(n)
-hist(muestraInversa, prob=T, xlim=c(0,1), ylim=c(0,2.2))
+hist(muestraInversa, prob=T, xlim=c(0,1), ylim=c(0,2.8),breaks=30)
 lines(xfit, yfit, col = "blue", lwd = 2) # Funcion densidad
 
 # Tambien podemos calcular la ecdf a partir de los datos de la muestra
@@ -135,7 +135,7 @@ InversaEcdf <- Vectorize(function(x) { quantile(ecdfmuestra, x) })
 generadorBeta24Ecdf <- function(n) { InversaEcdf(runif(n))}
 muestraEcdf <- generadorBeta24Ecdf(n)
 # Ploteamos la muestra generada a partir de la Ecdf
-hist(muestraEcdf, prob=T, xlim=c(0,1), ylim=c(0,2.2))
+hist(muestraEcdf, prob=T, xlim=c(0,1), ylim=c(0,2.8),breaks=30)
 lines(xfit, yfit, col = "blue", lwd = 2) # Funcion densidad
 
 # Para la funcion inversa, tanto calculada a partir de la ecdf como resolviendo 
