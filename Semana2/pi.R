@@ -52,8 +52,8 @@ testUniforme <- function(ocurrencias) {
 
   chi2 <- sum((E - ocurrencias)**2/E)
   
-  # Devolvemos el valor de la ji^2
-  dchisq(chi2,n-1)
+  # Devolvemos el valor de la funcion de supervivencia de la ji^2
+  return(1-pchisq(chi2,n-1))
   
 }
 # Apartados a) y b)
@@ -99,5 +99,23 @@ print(testUniforme(ocurrencias))
 
 
 # Apartado e)
+n <- 1000
+bloques <- 999
+s <- readChar(file, n*bloques) # Leemos un millon de digitos de pi
+print(paste("Cargados",nchar(s),"de digitos"))
 
-s <- readChar(file, 1e6) # Leemos un millon de digitos de pi
+# Troceamos la cadena en bloques de tam n
+s <- splitInParts(s,n)
+s <- s[[1]]
+
+# Calculamos ocurrencias de cada uno de los vectores de tam 1000
+oc <- c()
+for( i in 1:bloques){
+  oc[[i]] <- contarOcurrencias(s[i],n,1,T)
+}
+
+pvalues <- sapply(oc, testUniforme)
+
+hist(pvalues, main="Histograma con p-valores", freq=F)
+print(paste("Pvalor maximo",max(pvalues)))
+print(paste("Pvalor minimo",min(pvalues)))
