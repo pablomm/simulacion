@@ -92,6 +92,7 @@ barplot(ocurrencias,names.arg=as.character(0:(10**grupos -1)) ,
 
 # Matriz con ocurrencias de las 100 parejas
 mat <- matrix(ocurrencias,10**(grupos-1),10**(grupos-1))
+print("Columnas : Unidades, Filas: Decenas")
 print(mat)
 
 # Obtenido un p-valor de 0.01192965
@@ -100,7 +101,8 @@ print(testUniforme(ocurrencias))
 
 # Apartado e)
 n <- 1000
-bloques <- 999
+bloques <- 999 # Problema con el final del fichero
+# Dejamos el ultimo bloque sin cargar, no afecta al resultado significativamente
 s <- readChar(file, n*bloques) # Leemos un millon de digitos de pi
 print(paste("Cargados",nchar(s),"de digitos"))
 
@@ -119,3 +121,7 @@ pvalues <- sapply(oc, testUniforme)
 hist(pvalues, main="Histograma con p-valores", freq=F)
 print(paste("Pvalor maximo",max(pvalues)))
 print(paste("Pvalor minimo",min(pvalues)))
+
+# Test de kolmogorov.smirov para probrar uniformidad de los p-values
+print(ks.test(pvalues,"punif"))
+
