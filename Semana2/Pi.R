@@ -3,6 +3,7 @@
 # Nombre del archivo
 file = "pi.txt";
 
+
 # Funcion auxiliar para trozear la cadena leida en bloques
 splitInParts <- function(string, size){
   pat <- paste0('(?<=.{',size,'})')
@@ -51,9 +52,9 @@ testUniforme <- function(ocurrencias) {
   E = sum(ocurrencias)/n
 
   chi2 <- sum((E - ocurrencias)**2/E)
-  
+  df <- n-1
   # Devolvemos el valor de la funcion de supervivencia de la ji^2
-  return(1-pchisq(chi2,n-1))
+  return (c(chi2, df, 1-pchisq(chi2,df)))
   
 }
 # Apartados a) y b)
@@ -78,6 +79,9 @@ barplot(ocurrencias,names.arg=as.character(0:(10**grupos -1)) ,
 # Obtenido un p-valor de 0.08235065
 print(testUniforme(ocurrencias))
 
+# Test chi cuadrado implementado por R
+print(chisq.test(ocurrencias))
+
 
 # Apartado d)
 n <- 20000
@@ -98,6 +102,9 @@ print(mat)
 # Obtenido un p-valor de 0.01192965
 print(testUniforme(ocurrencias))
 
+# Test chi cuadrado implementado por R
+print(chisq.test(ocurrencias))
+
 
 # Apartado e)
 n <- 1000
@@ -116,12 +123,15 @@ for( i in 1:bloques){
   oc[[i]] <- contarOcurrencias(s[i],n,1,T)
 }
 
-pvalues <- sapply(oc, testUniforme)
+pvalues <- sapply(oc, testUniforme)[3,]
 
 hist(pvalues, main="Histograma con p-valores", freq=F)
 print(paste("Pvalor maximo",max(pvalues)))
 print(paste("Pvalor minimo",min(pvalues)))
 
+# Investigar porque hay tantas repeticiones
+# print(ks.test(pvalues,"punif"))
+
 # Test de kolmogorov.smirov para probrar uniformidad de los p-values
-print(ks.test(pvalues,"punif"))
+print(ks.test(unique(pvalues),"punif"))
 
