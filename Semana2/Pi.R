@@ -135,3 +135,5 @@ print(paste("Pvalor minimo",min(pvalues)))
 # Test de kolmogorov.smirov para probrar uniformidad de los p-values
 print(ks.test(unique(pvalues),"punif"))
 
+
+
