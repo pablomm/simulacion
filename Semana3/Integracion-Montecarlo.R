@@ -1,7 +1,7 @@
 
 # Semana 3 - Simulacion de montecarlo
 
-montecarlo <- function(f, n=10000,xlim=c(0,1), ylim=c(0,1)) {
+montecarlo <- function(f, n=10000,xlim=c(0,1), ylim=c(0,1), plt=F) {
   # Integra la funcion f en el intervalo xlim usando el metodo de 
   # montecarlo, calculando la proporcion de puntos generados debajo
   # de la curva.
@@ -23,25 +23,20 @@ montecarlo <- function(f, n=10000,xlim=c(0,1), ylim=c(0,1)) {
   # Calculamos los puntos donde 
   values <- sapply(x,f)
   z <- ((values >= y))
+  integral <- length(z[z == TRUE])/n
   
-  return (list(integral=length(z[z == TRUE])/n,x=x,y=y,aceptados=z))
+  if(plt) {
+    colores <- rep("gainsboro", n)
+    colores[z == T] = "black"
+    
+    plot(x,y,col=colores, main=paste("Integral:", integral))
+    xfit = seq(xlim[1], xlim[2],0.01)
+    lines(xfit, sapply(xfit, f))
+  }
+  
+  return (integral)
   
 }
-
-# Integramos la funcion x**2
-n <- 10000
-
-f <- function(x) x**2 # Integral de x^2
-res <- montecarlo(f,n)
-
-#f <- function(x) sin(x) # Integral de sin(x)
-#res <- montecarlo(f,n,xlim=c(0,pi))
-
-# Pintamos los puntos aceptados en verde, los rechazados en azul
-colores <- rep("gainsboro", n)
-colores[res$aceptados == T] = "black"
-
-plot(res$x,res$y,col=colores, main=paste("Integral:", res$integral))
 
 # Segundo metodo de integracion
 
@@ -63,13 +58,24 @@ integra <- function(g, n=1000, xlim=c(0,1), rf=runif, df=dunif) {
   return (mean(values))
 }
 
-# Integramos por el segundo metodo x**2
-n <- 100000
-f <- function(x) x**2 # Integral de x**2
-res <- integra(f,n)
+n <- 100
+par(mfrow=c(1,1))
+# Integral de sin(x)
+res <- montecarlo(sin,n,xlim=c(0,pi),plt=T)  
 
-print(res)
+# Integral de x^2
+f <- function(x) x**2 
+print(montecarlo(f,n,plt=T)) # Metodo 1
+print(integra(f,n)) # Metodo 2
 
 
+# Comparamos la variabilidad de cada uno de los 2 metodos
+k <- 100 # Numero de simulaciones de la integral
 
+metodo1 <- replicate(k, montecarlo(f,n))
+metodo2 <- replicate(k, integra(f,n))
+
+par(mfrow=c(1,2))
+hist(metodo1, prob=T)
+hist(metodo2, prob=T)
 
