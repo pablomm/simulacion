@@ -25,7 +25,7 @@ import heapq as hp
 
 class Modelo:
 
-    def __init__(self,nservers,arrivalrate,serverrate,servtimemax):
+    def __init__(self,nservers,arrivalrate,serverrate,servtimemax,tiemposLlegada = None):
 
         if(nservers != 1):
             if(nservers != len(serverrate)):
@@ -63,11 +63,15 @@ class Modelo:
         self.time = 0
         self.closingtime = 1e3 #* max(1.0/arrivalrate, 1.0/max(serverrate))
 
+
         self.statistics= {}
         self.dictEvents = {}
         self.maxCola=0
         self.tmaxCola = 0
         self.meanTime = 0
+
+        #Para encadenar salidas
+        self.tiemposLlegada = tiemposLlegada
         #self.timeall        = nrealizations*closingtime
 
 
@@ -96,14 +100,22 @@ class Modelo:
     def simular(self):
         self.dictEvents.update({"Tiempo en cola medio": []} )
         self.dictEvents.update({"Serviores tiempo sin usar": []}) 
-        e = ev.ArrivalEvent(self.time,self.arrivalrate,self)
-        hp.heappush(self.eventList,e)
-        e = ev.ServerEndEvent(self.closingtime)
-        hp.heappush(self.eventList,e)
+        if self.tiemposLlegada:
+            for t in self.tiemposLlegada:
+                e = ev.ArrivalEventFixedTime(t,self)
+                hp.heappush(self.eventList,e)
+        else: 
+            e = ev.ArrivalEvent(self.time,self.arrivalrate,self)
+            hp.heappush(self.eventList,e)
+            e = ev.ServerEndEvent(self.closingtime)
+            hp.heappush(self.eventList,e)
         while self.eventList:
             e = hp.heappop(self.eventList)       # extrae el evento de maxima prioridad  
             e()
-        self.dictEvents.update({"Tiempo en cola medio": np.mean(self.inServerQueue)} )
+        if len(self.inServerQueue) > 0:
+            self.dictEvents.update({"Tiempo en cola medio": np.mean(self.inServerQueue)} )
+        else:
+            self.dictEvents.update({"Tiempo en cola medio": 0} )
         self.dictEvents.update({"Serviores tiempo sin usar": [np.mean(x) for x in self.ServersUnusedTime]}) 
         return
 
@@ -129,8 +141,8 @@ class Modelo:
         exp = lambda u: -np.log(u) / rate  
         u = np.random.uniform(0, 1, n)
         return exp(u)   
-    def collectStatistics(self, time, salida=0):
-        if self.maxCola < self.lq:
+    def collectStatistics(self, time):
+        if self.maxCola < self.lq:#Guardamos valor maximo de la cola, el tiempo en el que se produce por si lo necesitamos y la media de tiempo en ese sistema para el valor de cola maximo
             self.maxCola = self.lq
             self.tmaxCola = time
             tiempo = [0]
@@ -138,6 +150,6 @@ class Modelo:
                 tiempo = self.outQueue
             self.meanTime = np.mean(tiempo)
         estadisticos = [ self.lq, self.ls, self.inQueue, self.outQueue,
-                      self.inServerQueue,  self.ServersUnusedTime,self.salidas,self.maxCola,self.tmaxCola,self.meanTime]
+                      self.inServerQueue,  self.ServersUnusedTime,self.salidas,self.maxCola,self.tmaxCola,self.meanTime,self.valoresCola]
 
         self.statistics.update({time:estadisticos})

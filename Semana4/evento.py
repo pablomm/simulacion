@@ -46,6 +46,7 @@ class ServerEndEvent(Evento):
     def __call__(self):
         return self.clock_time
 
+
 class ArrivalEvent(Evento):
 
     def __init__(self, clocktime,rate, modelo):
@@ -95,14 +96,46 @@ class ArrivalEvent(Evento):
         #Añadimos el tiempo de este evento en la lista de llegadas:
         self.modelo.inQueue.append(self.clock_time)
 
-        self.modelo.collectStatistics(self.clock_time,0)
+        self.modelo.collectStatistics(self.clock_time)
         return self.clock_time
 
+class ArrivalEventFixedTime(ArrivalEvent):
+    def __init__(self, clocktime, modelo):
+
+        super().__init__(clocktime,0,modelo)
+
+    def __call__(self):
+        r"""
+        Procesado de un evento de llegada. Si hay servidores vacios usa uno de
+        ellos, en otro caso se incluye en la cola.
+
+        Encadena un evento de llegada.
+        """
+        # Caso elementos en cola
+        if self.modelo.lq != 0:
+            self.modelo.lq += 1
+
+        else: # Caso elementos
+            s = self.modelo.get_server(self.clock_time) # Obtenemos servidor y lo ocupamos is libre
+            if s == -1: # Caso todos los servidores ocupados
+                self.modelo.lq += 1
+            else: # Lo incluimos en el servidor libre
+                s_time = self.modelo.generate_server_time(s)
+                t = self.clock_time + s_time
+
+                # Como solamente metemos elementos de salida por cada elemento no necesitamos comprobar
+                e = DepartureEvent(t, self.modelo, s,True)
+                self.modelo.add_event(e)
+        self.modelo.inQueue.append(self.clock_time)#incluimos tiempo de llegada
+
+        self.modelo.collectStatistics(self.clock_time)
+        return self.clock_time
 
 class DepartureEvent(Evento):
 
-    def __init__(self, clocktime, modelo, server):
+    def __init__(self, clocktime, modelo, server,FixedTime = False):
 
+        self.FixedTime = FixedTime 
         self.modelo = modelo
         self.server = server
 
@@ -121,17 +154,19 @@ class DepartureEvent(Evento):
             # Generar otro Departure para el elemento sacado de la cola
             s = self.modelo.generate_server_time(self.server)
             t = self.clock_time + s
-            if self.modelo.lq != 0:
+            if len(self.modelo.inQueue) > 2:
                 self.modelo.inServerQueue.append(self.clock_time - self.modelo.inQueue[-2])# El tiempo entre el elemento actual seria cuando entra el siguiente al sistema (-1 es cuando salio de la cola el actual)
+            else:
+                self.modelo.inServerQueue.append(0)
             # Estaria vien meter esta comprobacion en add_event y ahorranosla aqui
-            if t < self.modelo.closingtime:
-                e = DepartureEvent(t , self.modelo, self.server)
+            if t < self.modelo.closingtime or self.FixedTime: #si es un modelo con llegadas ya establecidas da el closing time no afecta.
+                e = DepartureEvent(t , self.modelo, self.server) 
                 self.modelo.add_event(e)
 
         else:
             self.modelo.free_server(self.server,self.clock_time) # Liberamos el servidor
-        self.modelo.salidas.append(self.clock_time)
-        self.modelo.valoresCola.append(self.modelo.lq)
-        self.modelo.tiempoEntreSalidas.append(self.clock_time- self.modelo.tiempoEntreSalidas[-1])
-        self.modelo.collectStatistics(self.clock_time,1)
+        self.modelo.salidas.append(self.clock_time)#añadimos a la lista de tiempos de salidas
+        self.modelo.valoresCola.append(self.modelo.lq)#añadimos a los valores de la cola para estadisticas de maximo y minimo
+        self.modelo.tiempoEntreSalidas.append(self.clock_time- self.modelo.tiempoEntreSalidas[-1]) #miramos cuando ha salido este elemento vs el anterior
+        self.modelo.collectStatistics(self.clock_time)
         return self.clock_time
