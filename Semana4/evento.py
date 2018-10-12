@@ -18,7 +18,7 @@ class Evento:
         self.__clocktime = clocktime
 
     @property
-    def clock_time(self,v):
+    def clock_time(self):
         return self.__clocktime
 
     @property
@@ -57,7 +57,7 @@ class ArrivalEvent(Evento):
     def _generate_time(self):
         r"""Distribucion te tiempos del evento de llegada"""
 
-        return numpy.random.exponential(scale=self.rate)
+        return np.random.exponential(scale=self.rate)
 
 
     def __call__(self):
@@ -70,20 +70,20 @@ class ArrivalEvent(Evento):
         # Caso elementos en cola
         if self.modelo.lq != 0:
             self.modelo.lq += 1
-        else: # Caso elementos
-            s = self.modelo.get_server() # Obtenemos servidor y lo ocupamos is libre
 
+        else: # Caso elementos
+            s = self.modelo.get_server(self.clock_time) # Obtenemos servidor y lo ocupamos is libre
             if s == -1: # Caso todos los servidores ocupados
                 self.modelo.lq += 1
             else: # Lo incluimos en el servidor libre
+                
                 s_time = self.modelo.generate_server_time(s)
                 t = self.clock_time + s_time
 
                 # Estaria vien meter esta comprobacion en add_event y ahorranosla aqui
                 if t < self.modelo.closingtime:
-                    e = DepartureEvent(t, modelo, s)
+                    e = DepartureEvent(t, self.modelo, s)
                     self.modelo.add_event(e)
-
         # Encadenamos un evento de llegada en tiempo T+S
         s = self._generate_time()
         t = self.clock_time + s
@@ -92,6 +92,10 @@ class ArrivalEvent(Evento):
             e = ArrivalEvent(t, self.rate, self.modelo)
             self.modelo.add_event(e) # Anadimos el evento de llegada
 
+        #Añadimos el tiempo de este evento en la lista de llegadas:
+        self.modelo.inQueue.append(self.clock_time)
+
+        self.modelo.collectStatistics(self.clock_time,0)
         return self.clock_time
 
 
@@ -109,19 +113,25 @@ class DepartureEvent(Evento):
         En otro caso decrementa el numero de elementos de la cola y genera otro
         evento de Departure.
         """
+        #Sacamos el ultimo tiempo en la cola
+        self.modelo.outQueue.append(self.clock_time - self.modelo.inQueue[-1])
 
         if self.modelo.lq != 0:
             self.modelo.lq -= 1
             # Generar otro Departure para el elemento sacado de la cola
             s = self.modelo.generate_server_time(self.server)
             t = self.clock_time + s
-
+            if self.modelo.lq != 0:
+                self.modelo.inServerQueue.append(self.clock_time - self.modelo.inQueue[-2])# El tiempo entre el elemento actual seria cuando entra el siguiente al sistema (-1 es cuando salio de la cola el actual)
             # Estaria vien meter esta comprobacion en add_event y ahorranosla aqui
             if t < self.modelo.closingtime:
-                e = DepartureEvent(t + s, modelo, self.server)
+                e = DepartureEvent(t , self.modelo, self.server)
                 self.modelo.add_event(e)
 
         else:
-            self.modelo.free_server(self.server) # Liberamos el servidor
-
+            self.modelo.free_server(self.server,self.clock_time) # Liberamos el servidor
+        self.modelo.salidas.append(self.clock_time)
+        self.modelo.valoresCola.append(self.modelo.lq)
+        self.modelo.tiempoEntreSalidas.append(self.clock_time- self.modelo.tiempoEntreSalidas[-1])
+        self.modelo.collectStatistics(self.clock_time,1)
         return self.clock_time
