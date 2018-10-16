@@ -44,7 +44,7 @@ class ServerEndEvent(Evento):
         super().__init__("Server End Event", clocktime)
 
     def __call__(self):
-        return self.clock_time
+        return self.clock_time, self.clock_time #???
 
 
 class ArrivalEvent(Evento):
@@ -68,13 +68,14 @@ class ArrivalEvent(Evento):
 
         Encadena un evento de llegada.
         """
-        # Caso elementos en cola
-        if self.modelo.lq != 0:
+        
+        tam_cola = self.modelo.lq
+        
+        
+        if self.modelo.lq != 0: # Caso elementos en cola
             self.modelo.lq += 1
-
-        else: # Caso elementos
-
-             # Obtenemos servidor y lo ocupamos is libre
+        else: 
+            # Obtenemos servidor y lo ocupamos si esta libre
             s = self.modelo.get_server(self.clock_time)
 
             if s == -1: # Caso todos los servidores ocupados
@@ -94,14 +95,15 @@ class ArrivalEvent(Evento):
 
         #Añadimos el tiempo de este evento en la lista de llegadas:
         self.modelo.add_arrival(self.clock_time)
+        #Y el tamano de la cola al llegar
+        self.modelo.add_tamcola(tam_cola) #TODO aqui o devolverlo?
 
         return self.clock_time, self.clock_time
 
 class DepartureEvent(Evento):
 
-    def __init__(self, clocktime, modelo, server,FixedTime = False):
+    def __init__(self, clocktime, modelo, server):
 
-        self.FixedTime = FixedTime
         self.modelo = modelo
         self.server = server
 
@@ -118,7 +120,8 @@ class DepartureEvent(Evento):
         if self.modelo.lq != 0:
 
             self.modelo.lq -= 1
-            # Generar otro Departure para el elemento sacado de la cola
+            
+# Generar otro Departure para el elemento sacado de la cola
             s = self.modelo.generate_server_time(self.server)
             t = self.clock_time + s
             e = DepartureEvent(t , self.modelo, self.server)

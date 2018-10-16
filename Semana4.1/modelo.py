@@ -26,11 +26,10 @@ import heapq as hp
 class Modelo:
 
     def __init__(self, nservers = 1, arrivalrate = 1,
-                 serverrate = 1, servtimemax = 10):
+                 serverrate = 1, closingtime = 1e3):
 
-        if(nservers != 1):
-            if(nservers != len(serverrate)):
-                raise ValueError('nservers')
+        if(nservers != len(serverrate)):
+            raise ValueError('nservers')
 
         # state variables:
         self.ls = np.zeros(nservers)  # server state {1, 0}
@@ -42,13 +41,16 @@ class Modelo:
         
         # The below is for collection of accumulated waiting time statistics
 
-        self.inQueue =  []           # Almacena tiempos de llegada clientes
+        self.inQueue =  []          # Almacena tiempos de llegada clientes
+        self.queueSize = []         # Almacena el tamano de la cola cuando llega el cliente
+        
+        self.queueTime = []         # Almacena el tiempo en cola de cada cliente
         self.outQueue = []          # Almacena el tiempo en el sistema
-        self.inServerQueue = []          #Almacena tiempo en cola
-        self.salidas = []           #Almacena salidas
-        self.tiempoEntreSalidas = [0]
-        self.valoresCola = [0]
-        self.ServersUnusedTime = [[0] for _ in range(nservers)]
+        
+        #self.salidas = []           #Almacena salidas
+        #self.tiempoEntreSalidas = [0]
+        #self.valoresCola = [0]
+        #self.ServersUnusedTime = [[0] for _ in range(nservers)]
 
         #: Number of servers
         self.nservers = nservers
@@ -57,27 +59,19 @@ class Modelo:
         self.arrivalrate = arrivalrate
 
         #: Service time (inputs to the exponential distribution generator)
-        if nservers == 1:
-            serverrate = [serverrate]
         self.serverrate   = serverrate    # Mean service time ( 1 /serverrate )
-        self.servtimemax  =  servtimemax  # extreme outliers may screw up the statistics...
 
         #: Time when each realization is closed (long enough so that equilibrium
         #: may be assumed to prevail during most of each realization)
         self.time = 0
-        self.closingtime = 1e3 #* max(1.0/arrivalrate, 1.0/max(serverrate))
+        self.closingtime = closingtime #* max(1.0/arrivalrate, 1.0/max(serverrate))
 
 
         self.statistics= {}
-        self.dictEvents = {}
-        self.maxCola=0
-        self.tmaxCola = 0
-        self.meanTime = 0
-
-        #Para encadenar salidas
-        self.tiemposLlegada = tiemposLlegada
-        #self.timeall        = nrealizations*closingtime
-
+        #self.dictEvents = {}
+        #self.maxCola=0
+        #self.tmaxCola = 0
+        #self.meanTime = 0
 
 
     def get_server(self,time):
@@ -90,7 +84,7 @@ class Modelo:
         else:
 
             pos = rn.randint(0,l-1)
-            self.ServersUnusedTime[pos][-1] = time - self.ServersUnusedTime[pos][-1]
+            #self.ServersUnusedTime[pos][-1] = time - self.ServersUnusedTime[pos][-1]
             self.ls[r[0][pos]] = 1;
 
             return r[0][pos];
@@ -98,40 +92,39 @@ class Modelo:
 
 
     def add_event(self,e):
-
-        hp.heappush(self.eventList, e)
+        if e.clock_time < self.closingtime:
+            hp.heappush(self.eventList, e)
 
     def simular(self):
-        self.dictEvents.update({"Tiempo en cola medio": []} )
-        self.dictEvents.update({"Serviores tiempo sin usar": []})
-        if self.tiemposLlegada:
-            for t in self.tiemposLlegada:
-                e = ev.ArrivalEventFixedTime(t,self)
-                hp.heappush(self.eventList,e)
-        else:
-            e = ev.ArrivalEvent(self.time,self.arrivalrate,self)
-            hp.heappush(self.eventList,e)
-            e = ev.ServerEndEvent(self.closingtime)
-            hp.heappush(self.eventList,e)
+        #self.dictEvents.update({"Tiempo en cola medio": []} )
+        #self.dictEvents.update({"Serviores tiempo sin usar": []})
+        
+        e = ev.ArrivalEvent(self.time, self.arrivalrate, self)
+        hp.heappush(self.eventList,e)
+        
+        e = ev.ServerEndEvent(self.closingtime)
+        hp.heappush(self.eventList,e)
+
         while self.eventList:
             e = hp.heappop(self.eventList)       # extrae el evento de maxima prioridad
-            e()
-        if len(self.inServerQueue) > 0:
-            self.dictEvents.update({"Tiempo en cola medio": np.mean(self.inServerQueue)} )
-        else:
-            self.dictEvents.update({"Tiempo en cola medio": 0} )
-        self.dictEvents.update({"Serviores tiempo sin usar": [np.mean(x) for x in self.ServersUnusedTime]})
-        return
+            ret = e()
+            self.generate_statistics(t_actual = ret[0], t_llegada = ret[1])
+        
+        #if len(self.queueTime) > 0:
+        #    self.dictEvents.update({"Tiempo en cola medio": np.mean(self.queueTime)} )
+        #else:
+        #    self.dictEvents.update({"Tiempo en cola medio": 0} )
+        
+        #self.dictEvents.update({"Serviores tiempo sin usar": [np.mean(x) for x in self.ServersUnusedTime]})
+        return self
 
     def free_server(self,s,time):
-        self.ServersUnusedTime[s].append(time)
+        #self.ServersUnusedTime[s].append(time)
         self.ls[s] = 0;
 
     def generate_server_time(self,index):
         return self.f_exponential(self.serverrate[index]);
 
-    def generate_statistics(self):
-        pass
     def f_exponential (self,rate, n = None):
         """ Generate random exponential deviates
 
@@ -146,15 +139,21 @@ class Modelo:
         u = np.random.uniform(0, 1, n)
         return exp(u)
 
-    def collectStatistics(self, time):
-        if self.maxCola < self.lq:#Guardamos valor maximo de la cola, el tiempo en el que se produce por si lo necesitamos y la media de tiempo en ese sistema para el valor de cola maximo
-            self.maxCola = self.lq
-            self.tmaxCola = time
-            tiempo = [0]
-            if (len(self.outQueue)) != 0:
-                tiempo = self.outQueue
-            self.meanTime = np.mean(tiempo)
-        estadisticos = [ self.lq, self.ls, self.inQueue, self.outQueue,
-                      self.inServerQueue,  self.ServersUnusedTime,self.salidas,self.maxCola,self.tmaxCola,self.meanTime,self.valoresCola]
+    def add_arrival(self, time):
+        self.inQueue.append(time)
+    
+    def get_arrival(self):
+        return hp.heappop(self.inQueue) #TODO lo sacamos? Estaria bien dejarlos pa estadisticas
+    
+    def add_tamcola(self, tamcola):
+        self.queueSize.append(tamcola)
+    
+    def generate_statistics(self, t_actual, t_llegada):
+        self.outQueue.append(t_actual - t_llegada)
+        #tamano cola, estado servidor ...
+        
+        return
 
-        self.statistics.update({time:estadisticos})
+    def collectStatistics(self, time):
+        pass
+
