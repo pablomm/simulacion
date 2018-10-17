@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 from modelo import MMc
 
-
+numero_servidores = 10
 # Parametros de la simulacion de un M/M/1
-arrival_lambda = 1. # Parametro tiempos exponenciales llegada
+arrival_lambda = 2. # Parametro tiempos exponenciales llegada
 closing_time = 1000 # Tiempo a simular cada MM1
 
 factores_carga = [.5,.7,.8,.9] # Distintos rhos con los que compara el MM1
@@ -24,7 +24,7 @@ tiempo_estacionario = 250
 
 numero_simulaciones = 25 # Numero de simulacions a realizar por factor de carga
 
-anteriores = 3 # Numero de anteriores a tener en cuenta en ultimo grafico
+anteriores = 20 # Numero de anteriores a tener en cuenta en ultimo grafico
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
                   .format(rho, i+1,numero_simulaciones), end="\r")
 
 
-            m = MMc(arrival_lambda=arrival_lambda, server_lambda=server_lambda,
+            m = MMc(numero_servidores, arrival_lambda=arrival_lambda, server_lambda=server_lambda,
                     closing_time=closing_time).simulate()
 
             # Solo consideramos los tiempos a partir de la rampa de subida
@@ -101,23 +101,9 @@ def main():
             plots[8][j].scatter(m.tiempo_sistema[:-anteriores],
                                 m.tiempo_sistema[anteriores:])
 
-
-
-
-
-        # Dibujamos exnencial mu - lambda
-        x = np.linspace(0, d)
-        y = sc.stats.expon.pdf(x, scale=1./(server_lambda - arrival_lambda))
-        plots[0][j].plot(x, y, color="red", linestyle="dashed")
-
         plots[1][j].hist(tiempos, density=True)
-        plots[1][j].plot(x, y, color="red", linestyle="dashed")
-
         plots[2][j].hist(colas)
-        plots[2][j].axvline(x=rho**2/(1-rho), linewidth=2.5, linestyle="dashed", c="red")
-
         plots[3][j].hist(colas_no_vacias)
-        plots[3][j].axvline(x=1./(1-rho), linewidth=2.5, linestyle="dashed", c="red")
 
 
 
