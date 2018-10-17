@@ -13,15 +13,18 @@ from modelo import MMc
 
 
 # Parametros de la simulacion de un M/M/1
-arrival_lambda = 1. # Parametro tiempos exponenciales llegada
+arrival_lambda = 2. # Parametro tiempos exponenciales llegada
 closing_time = 1000 # Tiempo a simular cada MM1
 
 factores_carga = [.5,.7,.8,.9] # Distintos rhos con los que compara el MM1
+#factores_carga = [.5,.7,.8,.9,.999] # Distintos rhos con los que compara el MM1
 
 # Rampa se subida
-tiempo_estacionario = 300
+tiempo_estacionario = 250
 
-numero_simulaciones = 15 # Numero de simulacions a realizar por factor de carga
+numero_simulaciones = 25 # Numero de simulacions a realizar por factor de carga
+
+anteriores = 3 # Numero de anteriores a tener en cuenta en ultimo grafico
 
 
 def main():
@@ -29,7 +32,8 @@ def main():
     plt.style.use("seaborn")
 
     # Creamos un array con todos los plots que haremos para mas facilidad
-    plots = [plt.subplots(len(factores_carga), 1, sharex=True)[1] for _ in range(7)]
+    nplots = 9
+    plots = [plt.subplots(len(factores_carga), 1, sharex=True)[1] for _ in range(nplots)]
 
     # Titulos
     plots[0][0].title.set_text("Tiempo total en el sistema")
@@ -39,6 +43,8 @@ def main():
     plots[4][0].title.set_text("Tiempo de espera / tiempo")
     plots[5][0].title.set_text("Tamaño de la cola / tiempo")
     plots[6][0].title.set_text("Tamaño de la cola / Tiempo de espera")
+    plots[7][0].title.set_text("Tiempo de espera / Tiempo de espera anterior")
+    plots[8][0].title.set_text("Tiempo de espera / media tiempos {} anteriores".format(anteriores))
 
     d = 0
 
@@ -84,6 +90,20 @@ def main():
 
             indices = np.in1d(m.times, m.departure_times)
             plots[6][j].scatter(m.lq_record[indices], m.tiempo_sistema)
+
+            plots[7][j].scatter(m.tiempo_sistema[:-1], m.tiempo_sistema[1:])
+
+
+            suma = m.tiempo_sistema[anteriores:] / anteriores
+            for i in range(1,anteriores):
+                suma += m.tiempo_sistema[i:-(anteriores-i)] / anteriores
+
+            plots[8][j].scatter(m.tiempo_sistema[:-anteriores],
+                                m.tiempo_sistema[anteriores:])
+
+
+
+
 
         # Dibujamos exnencial mu - lambda
         x = np.linspace(0, d)
