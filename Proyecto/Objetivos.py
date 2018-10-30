@@ -47,10 +47,31 @@ class Objetivos:
         """
         pass
 
-    @property
-    def objetivos(self):
-        """Devuelve la lista de coordenadas con los objetivos"""
-        return self.lista_objetivos
+    def objetivos(self, *, r=None, coordenadas=None, coordenada=None):
+        """Devuelve la lista de coordenadas con los objetivos.
+            Si se especifica r devolvera los objetidos dentro del radio"""
+
+
+
+        if r is None:
+            return self.lista_objetivos
+
+
+        if coordenada is not None:
+            coordenadas = [coordenada]
+
+        objs = []
+
+
+        for objetivo in self.lista_objetivos:
+            for coordenada in coordenadas:
+                if np.linalg.norm(objetivo - coordenada) <= r:
+                    objs.append(objetivo)
+                    break
+
+
+        return np.array(objs)
+
 
     @property
     def numero_objetivos(self):
