@@ -10,12 +10,14 @@ import itertools
 
 
 from Objetivos import ObjetivosUniformes
+from Espacio import EspacioToroidalFinito
 
 # Configuracion del espacio
 n_puntos = 300
 size = (100,100)
 
 coordenadas = np.array((10,10))
+coordenada = coordenadas
 R = 20 # Radio de vision
 r = 5 # Radio de explotacion
 
@@ -32,17 +34,14 @@ color_fuera = "green"
 color_organismo = "orange"
 
 
+espacio = EspacioToroidalFinito((0,100), (0,100))
+objetivos = ObjetivosUniformes(n_puntos, espacio)
 
-
-# Modelo con targets distribuidos uniformes
-objetivos = ObjetivosUniformes(n_puntos, size)
 objetivos.plot(c=color_fuera)
 
 puntos_equivalentes =  itertools.product((0,-size[0],size[0]),(0,-size[1],size[1]))
-
-
-
 puntos = np.array(list(puntos_equivalentes)) + coordenadas
+
 
 # Dibujamos areas de las zonas
 for punto in puntos:
@@ -52,8 +51,8 @@ for punto in puntos:
     ax.add_artist(zona)
 
 
-zona_vision = objetivos.objetivos(r=R, coordenadas=puntos)
-zona_explotacion = objetivos.objetivos(r=r, coordenadas=puntos)
+zona_vision = objetivos.objetivos(r=R, coordenada=coordenada)
+zona_explotacion = objetivos.objetivos(r=r, coordenada=coordenada)
 
 if len(zona_vision) != 0:
     plt.scatter(zona_vision[:,0],zona_vision[:,1], c=color_vision)

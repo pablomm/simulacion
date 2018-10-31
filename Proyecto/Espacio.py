@@ -3,6 +3,8 @@ import abc
 import matplotlib.pyplot as plt
 import math
 
+
+import itertools
 class Espacio:
 
   __metaclass__ = abc.ABCMeta
@@ -11,11 +13,11 @@ class Espacio:
     self.__x = x
     self.__y = y
     self.__tipo = name
-    
+
   @property
   def ejex(self):
     return self.__x
-  
+
   @property
   def ejey(self):
     return self.__y
@@ -26,6 +28,11 @@ class Espacio:
   def __str__(self):
     return(self.__tipo + "\n" + np.zeros((*self.size)))
 
+
+  @abc.abstractmethod
+  def coordenadas_equivalentes(self,coordenada):
+    pass
+
   @abc.abstractmethod
   def coordenadas(self,iniciales,finales):
     pass
@@ -35,14 +42,34 @@ class Espacio:
   @abc.abstractmethod
   def estabilizar_en_rango(self,objetivo,rango, posiciones):
     pass
-  @abc.abstractmethod    
+  @abc.abstractmethod
   def calcular_angulo_mov(self,inicial,final):
     pass
 
 class EspacioToroidalFinito(Espacio):
   def __init__(self,x,y):
     super().__init__(x,y,"Espacio toroidal finito")
-  
+
+
+  def coordenadas_equivalentes(self, coordenada):
+
+      size = self.size
+
+
+      puntos_equivalentes =  itertools.product((0,-size[0],size[0]),
+                                               (0,-size[1],size[1]))
+
+      puntos = np.array(list(puntos_equivalentes))
+
+      puntos[:,0] += self.ejex[0]
+      puntos[:,1] += self.ejey[0]
+
+      puntos += np.array(coordenada)
+
+      return puntos
+
+
+
   def coordenadas(self,iniciales,finales):
     [X,Y] = self.size
     return [estabilizar_en_rango(finales[0],X,self.ejex),
@@ -52,14 +79,9 @@ class EspacioToroidalFinito(Espacio):
     vista = []
     for i in [-1,0,1]:
       for j in [-1,0,1]:
-        vista.extend([(posicion[0]-(objetivo[0] + i*(self.ejex[1] - self.ejex[0])))** 2 + (posicion[1] -(objetivo[1] + j*(self.ejey[1] - self.ejey[0])))**2 < radio 
+        vista.extend([(posicion[0]-(objetivo[0] + i*(self.ejex[1] - self.ejex[0])))** 2 + (posicion[1] -(objetivo[1] + j*(self.ejey[1] - self.ejey[0])))**2 < radio
                   for objetivo in Lobjetivos.objetivos])
     return vista
-
-  def coordenadas_equivalentes(self,coordenadas):
-    #[x0,x1] = self.ejex
-    #[y0,y1] = self.ejey
-    
 
   def estabilizar_en_rango(self,objetivo,rango, posiciones):
     res = objetivo
@@ -72,4 +94,4 @@ class EspacioToroidalFinito(Espacio):
   def calcular_angulo_mov(self,inicial,final):
     y = final[1]-inicial[1]
     x = final[0]-inicial[0]
-    return angle = math.atan2(y, x) * (180.0 / math.pi)
+    return math.atan2(y, x) * (180.0 / math.pi)
