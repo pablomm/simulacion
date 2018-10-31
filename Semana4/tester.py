@@ -7,18 +7,40 @@ posiciones = {"Cola": 0,"Servers":1,"Llegadas": 2, "TiempoSistema": 3,
 medias = [[],[],[],[],[]]
 
 plt.figure(1)
+reps = 50
 
+def htmlcolor(r, g, b):
+    def _chkarg(a):
+        if isinstance(a, int): # clamp to range 0--255
+            if a < 0:
+                a = 0
+            elif a > 255:
+                a = 255
+        elif isinstance(a, float): # clamp to range 0.0--1.0 and convert to integer 0--255
+            if a < 0.0:
+                a = 0
+            elif a > 1.0:
+                a = 255
+            else:
+                a = int(round(a*255))
+        else:
+            raise ValueError('Arguments must be integers or floats.')
+        return a
+    r = _chkarg(r)
+    g = _chkarg(g)
+    b = _chkarg(b)
+    return '#{:02x}{:02x}{:02x}'.format(r,g,b)
 #Cada Fila es la cola iesima las diferentes lineas son variaciones de los parametros
-colors = ['red', 'black', 'blue', 'brown', 'green']
+colors = [htmlcolor(int(x[0]),int(x[1]),int(x[2])) for x in np.random.randint(0,255,(reps,3))]
 
-for k in range(5):
+for k in range(reps):
 	times = None
 	for i in range(5):
 		plt.figure(1)
 		j = i+1
 		l1 = 0.3/(10*j)
 		l2 = 0.2/j
-		m = mod.Modelo(2,0.1,[l1,l2],5,times)
+		m = mod.Modelo(2,0.1+k/50,[l1,l2],5,times)
 		m.simular()
 		#print(m.dictEvents["Serviores tiempo sin usar"])
 		medias[0].append(m.dictEvents["Tiempo en cola medio"])
@@ -50,7 +72,10 @@ for k in range(5):
 		plt.figure(2)
 		plt.subplot(1,5,i+1)
 		plt.title("${l1},{l2}$".format(l1=l1,l2=l2))
-		plt.plot(tiempos,valoresCola,color = colors[k], label = "$experimento {k}$".format(k=k))
+		if(k <3 or reps-k < 3):
+			plt.plot(tiempos,valoresCola,color = colors[k], label = "$experimento {k}$".format(k=k))
+		else:
+			plt.plot(tiempos,valoresCola,color = colors[k])
 		plt.xlabel("Tiempo")
 		plt.ylabel("n elementos en cola")
 plt.legend(loc='best')
