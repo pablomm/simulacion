@@ -13,7 +13,7 @@ from modelo import MMc
 
 numero_servidores = 10
 # Parametros de la simulacion de un M/M/1
-arrival_lambda = 2. # Parametro tiempos exponenciales llegada
+arrival_lambda = 1. # Parametro tiempos exponenciales llegada
 closing_time = 1000 # Tiempo a simular cada MM1
 
 factores_carga = [.5,.7,.8,.9] # Distintos rhos con los que compara el MM1
@@ -82,7 +82,15 @@ def main():
 
             # Plots
             plots[0][j].hist(t_salidas_estacionario, density=True, alpha=.4)
+
             d = max(d, np.max(t_salidas_estacionario))
+
+            #x = np.linspace(0, d)
+            #y = sc.stats.gamma.pdf(x, a=numero_servidores, scale=(server_lambda - arrival_lambda))
+            #print(numero_servidores,server_lambda,arrival_lambda)
+            #print(np.mean(t_salidas_estacionario))
+            #print(np.std(t_salidas_estacionario))
+            #plots[0][j].plot(x, y, color="red", linestyle="dashed")
 
             plots[4][j].plot(m.departure_times, m.tiempo_sistema)
             plots[5][j].plot(m.times,m.lq_record)
