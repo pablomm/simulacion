@@ -56,6 +56,11 @@ class EspacioToroidalFinito(Espacio):
                   for objetivo in Lobjetivos.objetivos])
     return vista
 
+  def coordenadas_equivalentes(self,coordenadas):
+    #[x0,x1] = self.ejex
+    #[y0,y1] = self.ejey
+    
+
   def estabilizar_en_rango(self,objetivo,rango, posiciones):
     res = objetivo
     if objetivo < posiciones[0]:
