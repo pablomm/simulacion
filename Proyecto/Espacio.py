@@ -123,6 +123,7 @@ class EspacioToroidalFinito(Espacio):
         if ax is None:
             ax = plt.gca()
 
+        trayectoria_real = trayectoria_real.copy()
         x = self.ejex
         y = self.ejey
         s = self.size
@@ -132,8 +133,25 @@ class EspacioToroidalFinito(Espacio):
             if np.equal(trayectoria[i], trayectoria_real[i]).all(): continue
 
             ax.plot(trayectoria_real[j:i+1,0], trayectoria_real[j:i+1,1], c=c)
-            j = i
+
+            if i > 1:
+
+                j = i - 1
+                if trayectoria_real[i,0] < x[0]:
+                    trayectoria_real[j,0] += s[0]
+                elif trayectoria_real[i,0] > x[1]:
+                    trayectoria_real[j,0] -= s[0]
+
+                if trayectoria_real[i,1] < y[0]:
+                    trayectoria_real[j,1] += s[1]
+                elif trayectoria_real[i,1] > y[1]:
+                    trayectoria_real[j,1] -= s[1]
+            else:
+
+                j = i
+
             trayectoria_real[i] = trayectoria[i]
+
 
         ax.plot(trayectoria_real[j:i+1,0], trayectoria_real[j:i+1,1], c=c)
 
