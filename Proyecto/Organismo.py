@@ -109,12 +109,10 @@ class Organismo:
 
 
 class OrganismoSencillo(Organismo):
-    """Clase organismo sencillo con movimiento aleatorio gaussiano
-        y una unidad de tiempo por movimiento"""
+    """Clase organismo sencillo con movimiento aleatorio
+        y una unidad de tiempo por movimiento y sin radio de sensibilidad"""
 
     def __init__(self, r_explotacion=1):
-
-        self.std = 1
 
         super().__init__(r_explotacion, name="Organismo Sencillo")
 
@@ -211,10 +209,6 @@ class OrganismoSencillo(Organismo):
             self.explotados = np.vstack((self.explotados,
                                          self.objetivos.lista_objetivos[indices]))
 
-    def movimiento(self):
-
-        return  self.posicion + np.random.normal(scale=self.std, size=2)
-
 
 class OrganismoSencilloV2(OrganismoSencillo):
     """Variante de Organismo sencillo el cual en una unidad de tiempo o avanza
@@ -245,3 +239,72 @@ class OrganismoSencilloV2(OrganismoSencillo):
 
             self.trayectoria.append(self.posicion)
             self.trayectoria_real.append(x)
+
+class RandomWalker(OrganismoSencillo):
+
+    def __init__(self, r_explotacion=1., std=1.):
+
+        self.std = std
+
+        super().__init__(r_explotacion)
+
+    def movimiento(self):
+        return  self.posicion + np.random.normal(scale=self.std, size=2)
+
+
+class LevyFlight(OrganismoSencillo):
+
+    def __init__(self, r_explotacion=1., a=.5, b=1.,loc=0., scale=1.):
+
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.levy = st.levy_stable(a, b, loc, scale)
+
+        super().__init__(r_explotacion)
+
+    def movimiento(self):
+
+
+        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+        angulo = np.random.uniform(0,2*np.pi)
+
+        mov = d * np.array((np.cos(angulo), np.sin(angulo)))
+
+        return  self.posicion + mov
+
+class RandomWalkerV2(OrganismoSencilloV2):
+
+    def __init__(self, r_explotacion=1., std=1.):
+
+        self.std = std
+
+        super().__init__(r_explotacion)
+
+    def movimiento(self):
+        return  self.posicion + np.random.normal(scale=self.std, size=2)
+
+
+class LevyFlight(OrganismoSencilloV2):
+
+    def __init__(self, r_explotacion=1., a=.5, b=1.,loc=0., scale=.1):
+
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.levy = st.levy_stable(a, b, loc, scale)
+
+        super().__init__(r_explotacion)
+
+    def movimiento(self):
+
+
+        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+
+        angulo = np.random.uniform(0,2*np.pi)
+
+        mov = d * np.array((np.cos(angulo), np.sin(angulo)))
+
+        return  self.posicion + mov

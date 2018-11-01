@@ -1,6 +1,13 @@
 
 
+import os
 import sys
+
+import matplotlib.pyplot as plt
+
+# Nos movemos al fichero del script para evitar problemas
+script_path = os.path.dirname(os.path.abspath( __file__ ))
+os.chdir(script_path)
 sys.path.append("../")
 
 
@@ -10,7 +17,7 @@ import matplotlib.pyplot as plt
 from objetivos import ObjetivosUniformes
 from espacio import EspacioToroidalFinito
 from modelo import Modelo
-from organismo import OrganismoSencillo
+from organismo import RandomWalkerV2
 
 
 # Configuracion del espacio
@@ -27,7 +34,7 @@ espacio = EspacioToroidalFinito(*size)
 objetivos = ObjetivosUniformes(n_puntos, espacio)
 modelo = Modelo(espacio, objetivos)
 
-organismo = OrganismoSencillo(r)
+organismo = RandomWalkerV2(r)
 modelo.add_organismo(organismo)
 
 
