@@ -17,12 +17,20 @@ class Objetivos:
 
 
         self.espacio = espacio
-
         # Inicializamos objetivos del sistema
-        objetivos, libres, n = self.inicializar_objetivos(numero_objetivos)
-        self.lista_objetivos = objetivos
-        self.libres  = libres
-        self._numero_objetivos = n
+        self.__n = numero_objetivos
+        self.inicializar()
+
+    def inicializar(self):
+            objetivos, libres, n = self.inicializar_objetivos(self.__n)
+            self.lista_objetivos = objetivos
+            self.libres  = libres
+            self._numero_objetivos = n
+
+    @property
+    def numero_objetivos(self):
+        """Devuelve el numero de objetivos actuales en el sistema"""
+        return self._numero_objetivos
 
     @abstractmethod
     def inicializar_objetivos(self, numero_objetivos):
@@ -45,13 +53,26 @@ class Objetivos:
                 coordenadas: Lista de posiciones de objetivos a explotar
 
             Returns:
-                Numero de objetivos explotados
+                Lista con objetivos explotados
+        """
+        pass
+
+    def actualizar_objetivos(self):
+        """Funcion para actualizar los objetivos en cada paso de la simulacion
+            Por defecto no hace nada
         """
         pass
 
     def objetivos(self, *, r=None, coordenada=None, return_index=False):
         """Devuelve la lista de coordenadas con los objetivos.
-            Si se especifica r devolvera los objetidos dentro del radio"""
+            Si se especifica r devolvera los objetivos dentro del radio
+
+            Args:
+                r (numeric): Radio de objetivos a devolver
+                coordenada (tuple): Tupla con posicion
+                return_index (bool): Si es True devuelve los indices de los
+                    objetivos en lugar de las coordenadas de estos.
+        """
 
         if r is None:
             return self.lista_objetivos
@@ -81,11 +102,6 @@ class Objetivos:
                               return_index=return_index)
 
 
-    @property
-    def numero_objetivos(self):
-        """Devuelve el numero de objetivos actuales en el sistema"""
-        return self._numero_objetivos
-
     def plot(self, ax=None, **kwargs):
         """Plotea los objetivos"""
 
@@ -108,14 +124,12 @@ class ObjetivosDesechables(Objetivos):
 
         Esta clase no es instanciable, no define un metodo para inicializar
         los objetivos, usar ObjetivosUniformes o ObjetivosAgrupados
-
         """
 
     def __init__(self, numero_objetivos, espacio, usos=1):
 
         self.usos = usos
-
-        super().__init__(numero_objetivos, espacio)
+        super().__init__(numero_objetivos*usos, espacio)
 
 
     def explotar_objetivo(self, indices):
@@ -187,7 +201,6 @@ class ObjetivosAgrupados(ObjetivosDesechables):
     def inicializar_objetivos(self, numero_objetivos_grupo):
         """Inicializa los objetivos en el espacio de manera uniforme"""
 
-
         numero_objetivos = numero_objetivos_grupo * self.numero_grupos
 
         # Genera objetivos agrupados
@@ -203,7 +216,8 @@ class ObjetivosAgrupados(ObjetivosDesechables):
             self.grupos[:,1] = np.random.uniform(*self.espacio.ejey,
                                                       size=self.numero_grupos)
         else:
-            self.grupos = np.array(self.grupos, dtype=float).reshape((self.numero_grupos, 2))
+            self.grupos = np.array(self.grupos, dtype=float).reshape(
+                (self.numero_grupos, 2))
 
         # Inicializamos cada uno de los grupos
         for i in range(self.numero_grupos):
@@ -230,19 +244,34 @@ class ObjetivosAgrupados(ObjetivosDesechables):
 
         return lista_objetivos, libres, numero_objetivos
 
-    def plot_grupos(self, ax=None):
+    def plot_grupos(self, ax=None, color=None, alpha=None, r=1.96):
+        """Dibuja un sombreado centrados en los nucleos de puntos, con un radio
+            de r*std
+
+            Args:
+                ax: Axis de matplotlib (opcional)
+                color: Color de las zonas
+                alpha: Opacidad
+                r: Constante proporcional a los radios, por defecto 1.96 que
+                    correspondiente al cuantil 95 de la normal.
+        """
 
         if ax is None:
             ax = plt.gca()
+
+        if color is None:
+            color = ObjetivosAgrupados.color_grupos
+
+        if alpha is None:
+            alpha = ObjetivosAgrupados.opacidad_grupos
 
 
         for grupo in self.grupos:
             centros = self.espacio.coordenadas_equivalentes(grupo)
 
             for centro in centros:
-                p = plt.Circle(centro, 1.96*self.std_grupos,
-                               color=ObjetivosAgrupados.color_grupos,
-                               alpha=ObjetivosAgrupados.opacidad_grupos)
+                p = plt.Circle(centro, r*self.std_grupos, color=color,
+                               alpha=alpha)
                 ax.add_artist(p)
 
         return ax

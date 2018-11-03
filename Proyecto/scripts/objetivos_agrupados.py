@@ -12,9 +12,7 @@ script_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(script_path)
 sys.path.append("../")
 
-from objetivos import ObjetivosAgrupados
-from espacio import EspacioToroidalFinito
-
+from simulador import ObjetivosAgrupados, EspacioToroidalFinito
 
 # Configuracion del espacio
 size = (100.,100.)

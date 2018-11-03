@@ -14,13 +14,10 @@ os.chdir(script_path)
 sys.path.append("../")
 
 
-import matplotlib.pyplot as plt
 
+from simulador import (ObjetivosUniformes, EspacioToroidalFinito, Modelo,
+                       OrganismoSencillo)
 
-from objetivos import ObjetivosUniformes
-from espacio import EspacioToroidalFinito
-from modelo import Modelo
-from organismo import OrganismoSencillo
 
 # Configuracion del espacio
 n_puntos = 100
