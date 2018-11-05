@@ -78,3 +78,18 @@ def plot_recorrido_targets(estadistica, ax=None, **kwargs):
 
     for i in range(estadistica.modelo.n_organismos):
         ax.hist(estadistica.recorrido_targets[:,i], density=True, **kwargs)
+
+    return ax
+
+### Grafica para estadistica
+
+### Graficasde la estadistica Recorrido Targets Multiple
+def plot_medias(estadistica, ax=None, **kwargs):
+
+    if ax is None:
+        ax = plt.gca()
+
+    for i in range(estadistica.n_organismos):
+        ax.plot(estadistica.parametros, estadistica.medias[:,i])
+
+    return ax

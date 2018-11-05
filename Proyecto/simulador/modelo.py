@@ -20,6 +20,7 @@ class Modelo:
         self.queue = Queue()
         self.estadisticas = []
         self.n_organismos = 0
+        self.n_bloques = 0
 
     def add_organismo(self, organismo):
         """Incluir organismo al modelo  """
@@ -47,6 +48,15 @@ class Modelo:
         for estadistica in self.estadisticas:
             estadistica.finalizar(end, n_simulacion)
 
+    def _finalizar_bloque_simulaciones(self):
+        """Finaliza las estadisticas al cierre de la simulacion"""
+        for estadistica in self.estadisticas:
+            estadistica.finalizar_bloque()
+
+    def limpiar_organismos(self):
+        self.queue.queue.clear()
+        self.n_organismos = 0
+
     def simular(self, closing_time=1e3, n_simulaciones=1, stop_empty=False,
                 verbose=2):
         """Simula el modelo hasta alcanzar el tiempo closing_time.
@@ -63,14 +73,21 @@ class Modelo:
 
         closing_time = int(closing_time)
         self.n_simulaciones = int(n_simulaciones)
+        self.n_bloques += 1
 
         for estadistica in self.estadisticas:
             estadistica.inicializar_simulaciones(self.n_simulaciones)
 
+        if verbose > 0:
+            print(40*" ", end="\r")
+
         for s in range(n_simulaciones):
 
             if verbose > 0:
+                if self.n_bloques > 1:
+                    print("Bloque {}: ".format(self.n_bloques), end="")
                 print("Simulacion {}".format(s+1), end="\r")
+
             # Vaciamos organismos de simulaciones anteriores
             if s != 0:
                 self.objetivos.inicializar()
@@ -82,6 +99,8 @@ class Modelo:
             for t in range(closing_time):
 
                 if verbose > 1:
+                    if self.n_bloques > 1:
+                        print("Bloque {}: ".format(self.n_bloques), end="")
                     print("Simulacion {}: {}/{}".format(s+1, t+1,closing_time),
                           end="\r")
 
@@ -97,6 +116,8 @@ class Modelo:
                     break
 
             self._finalizar_estadisticas(t, s)
+
+        self._finalizar_bloque_simulaciones()
 
         return t
 

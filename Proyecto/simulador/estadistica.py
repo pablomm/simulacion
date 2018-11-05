@@ -55,6 +55,9 @@ class Estadistica:
         estadistica"""
         pass
 
+    def finalizar_bloque(self):
+        pass
+
 class Trayectoria(Estadistica):
     """Clase para guardar las trayectorias.
 
@@ -138,3 +141,46 @@ class RecorridoTargets(Estadistica):
         for i, organismo in enumerate(self.modelo):
             self.recorrido_targets[s, i] = (organismo.n_explotados /
                                             organismo.espacio_recorrido)
+
+
+class RecorridoTargetsMultiple(Estadistica):
+    """Estadistica para calcular a lo largo de varias simulaciones la cantidad
+        de Targets entre espacio recorrido cambiando el parametro por cada estadistica
+
+        Solo valido con 1 organismo
+    """
+
+    def __init__(self, parametros, n_organismos=1):
+        self.parametros = parametros
+        self.n_bloques = len(parametros)
+        self.bloque_actual = -1
+        self.n_organismos = n_organismos
+
+
+
+    def add_modelo(self, modelo):
+        """Vincula la estadistica con un modelo. Inicializa el vector de medias"""
+        self.modelo = modelo
+        self.medias = np.zeros((self.n_bloques, self.n_organismos))
+        add_metodo(self, plot_medias)
+
+
+    def inicializar_simulaciones(self, n_simulaciones):
+
+        self.n_simulaciones = n_simulaciones
+        self.bloque_actual += 1
+
+    def inicializar(self, closing_time, n_simulacion):
+        pass
+
+    def actualizar(self, t, n_simulacion):
+        pass
+
+    def finalizar(self, t, s):
+
+        for i, organismo in enumerate(self.modelo):
+            self.medias[self.bloque_actual, i] += (organismo.n_explotados /
+                                            organismo.espacio_recorrido)
+
+    def finalizar_bloque(self):
+            self.medias[self.bloque_actual] /= self.n_simulaciones
