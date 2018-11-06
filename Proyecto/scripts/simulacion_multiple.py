@@ -9,13 +9,14 @@ script_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(script_path)
 sys.path.append("../")
 
-from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
+from simulador import ObjetivosUniformes, EspacioFinito, Modelo
 from simulador import Trayectoria, Explotados
 from simulador import RandomWalker
 
 
 # Configuracion del espacio
 n_objetivos = 100 # Numero de objetivos
+n_organismos = 5
 size = (100.,100.) # Dimensiones del espacio
 r = 3 # Radio de explotacion
 std = 1. # Desviacion estandar del movimiento browniano
@@ -26,13 +27,13 @@ inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
 plt.style.use("seaborn")
 
 # Creamos el modelo, definiendo el espacio y los objetivos
-espacio = EspacioToroidalFinito(*size)
+espacio = EspacioFinito(*size)
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
 
-# Creamos un random walker y lo añadimos al modelo
-organismo = RandomWalker(r, std=std, posicion=inicial)
-modelo.add_organismo(organismo)
+for _ in range(n_organismos):
+    organismo = RandomWalker(r, posicion=inicial)
+    modelo.add_organismo(organismo)
 
 # Especificamos que estadisticas queremos recolectar
 modelo.add_estadistica(Trayectoria())
@@ -41,9 +42,11 @@ modelo.add_estadistica(Explotados())
 modelo.simular(t)
 
 # Dibujamos el resultado de la simulacion
-organismo.plot_area_explotada()
 modelo.plot()
-organismo.plot_trayectoria()
-organismo.plot_explotados()
+
+for organismo in modelo:
+    organismo.plot_area_explotada(color=None)
+    organismo.plot_trayectoria(color=None)
+    organismo.plot_explotados()
 
 plt.show()

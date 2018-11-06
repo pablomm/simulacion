@@ -1,7 +1,10 @@
-import numpy as np
+
 import abc
-import matplotlib.pyplot as plt
 import math
+
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 import itertools
@@ -67,7 +70,8 @@ class Espacio:
 
         y = final[1]-inicial[1]
         x = final[0]-inicial[0]
-        return math.atan2(y, x) * (180.0 / math.pi)
+
+        return math.atan2(y, x)
 
     def plot(self, ax=None):
 
@@ -115,10 +119,6 @@ class EspacioToroidalFinito(Espacio):
 
     def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
         """Dibuja una trayectoria en el espacio"""
-        # TODO
-        # No reconstruye toda la trayectoria, solo la del punto en el que
-        # sale en el mapa, no por el que entra, pero no aparecen las lineas
-        # Cruzando el mapa al menos
 
         if ax is None:
             ax = plt.gca()
@@ -154,5 +154,34 @@ class EspacioToroidalFinito(Espacio):
 
 
         ax.plot(trayectoria_real[j:i+1,0], trayectoria_real[j:i+1,1], c=c)
+
+        return ax
+
+
+class EspacioFinito(Espacio):
+
+    def __init__(self, x, y):
+        super().__init__(x, y, "Espacio finito")
+
+
+    def coordenadas_equivalentes(self, coordenada):
+
+        return np.array([coordenada])
+
+    def coordenadas(self, iniciales, finales):
+
+        x = min(max(finales[0], self.ejex[0]), self.ejex[1])
+        y = min(max(finales[1], self.ejey[0]), self.ejey[1])
+
+        return np.array((x,y))
+
+    def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
+        """Dibuja una trayectoria en el espacio"""
+
+        if ax is None:
+            ax = plt.gca()
+
+
+        ax.plot(trayectoria[:,0], trayectoria[:,1], c=c)
 
         return ax

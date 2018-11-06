@@ -1,8 +1,13 @@
+"""
+Estudia  como varia el numero de targets/espacio recorrido y plotea el
+histograma de los valores obtenidos
 
+"""
 
 import os
 import sys
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -10,10 +15,11 @@ os.chdir(script_path)
 sys.path.append("../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import Trayectoria, Explotados
+from simulador import TargetEspacioOrganismo, SimulacionHistograma
 from simulador import RandomWalker
 
 
+n_simulaciones = 200
 # Configuracion del espacio
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
@@ -34,16 +40,18 @@ modelo = Modelo(espacio, objetivos)
 organismo = RandomWalker(r, std=std, posicion=inicial)
 modelo.add_organismo(organismo)
 
+modelo.add_estadistica(TargetEspacioOrganismo())
+
 # Especificamos que estadisticas queremos recolectar
-modelo.add_estadistica(Trayectoria())
-modelo.add_estadistica(Explotados())
+histograma = SimulacionHistograma("recorrido_targets")
+modelo.add_estadistica(histograma)
 
-modelo.simular(t)
 
-# Dibujamos el resultado de la simulacion
-organismo.plot_area_explotada()
-modelo.plot()
-organismo.plot_trayectoria()
-organismo.plot_explotados()
+modelo.simular(t, n_simulaciones, verbose=1)
+
+histograma.plot_histograma()
+
+print("Media", np.mean(histograma.histograma))
+print("Desviacion", np.std(histograma.histograma))
 
 plt.show()

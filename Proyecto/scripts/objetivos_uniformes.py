@@ -12,22 +12,20 @@ script_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(script_path)
 sys.path.append("../")
 
-from objetivos import ObjetivosUniformes
-from espacio import EspacioToroidalFinito
-
+from simulador import ObjetivosUniformes, EspacioToroidalFinito
 
 # Configuracion del espacio
 size = (100.,100.)
 
 # Configuracion de los objetivos
-n_puntos = 40
+n_objetivos = 40
 
 # Configuracion Plot
 plt.style.use("seaborn")
 
 # Generamos el espacio y los objetivos
 espacio = EspacioToroidalFinito(*size)
-objetivos = ObjetivosUniformes(n_puntos, espacio)
+objetivos = ObjetivosUniformes(n_objetivos, espacio)
 
 # Plot
 espacio.plot()
