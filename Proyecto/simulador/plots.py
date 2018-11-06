@@ -71,13 +71,13 @@ def plot_explotados(organismo, t=-1, ax=None, color="default"):
     return ax
 
 ### Graficasde la estadistica Recorrido Targets
-def plot_recorrido_targets(estadistica, ax=None, **kwargs):
+def plot_histograma(estadistica, ax=None, **kwargs):
 
     if ax is None:
         ax = plt.gca()
 
     for i in range(estadistica.modelo.n_organismos):
-        ax.hist(estadistica.recorrido_targets[:,i], density=True, **kwargs)
+        ax.hist(estadistica.histograma[:,i], density=True, **kwargs)
 
     return ax
 

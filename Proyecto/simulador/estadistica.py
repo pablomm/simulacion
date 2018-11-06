@@ -32,19 +32,16 @@ class Estadistica:
         """Vincula la estadistica con un modelo"""
         self.modelo = modelo
 
-    @abstractmethod
     def inicializar(self, closing_time, n_simulacion):
         """Prepara los objetos del modelo para recopilar los datos de la
             estadistica al inicio de cada simulacion"""
         pass
 
-    @abstractmethod
     def actualizar(self, t, n_simulacion):
         """Actualiza los datos de la estadistica en el modelo en un paso de
             una simulacion"""
         pass
 
-    @abstractmethod
     def finalizar(self, end, n_simulacion):
         """Finaliza las estadisticas al acabar una simulacion"""
         pass
@@ -117,51 +114,67 @@ class Explotados(Estadistica):
 
 
 
+class TargetEspacioOrganismo(Estadistica):
+    """
+    Estadistica simple que añade al organismo al final de cada simulacion el
+    n objetivos explotados entre el espacio recorrido.
+    """
 
-class RecorridoTargets(Estadistica):
+    def finalizar(self, t, n_simulacion):
+        for organismo in self.modelo:
+            organismo.recorrido_targets = organismo.n_explotados / organismo.espacio_recorrido
+
+
+
+
+class SimulacionHistograma(Estadistica):
     """Estadistica para calcular a lo largo de varias simulaciones la cantidad
         de Targets entre espacio recorrido
     """
 
+
+    def __init__(self, name):
+        self.name = name
+        super().__init__()
+
     def inicializar_simulaciones(self, n_simulaciones):
 
-            self.recorrido_targets = np.empty((n_simulaciones,
-                                               self.modelo.n_organismos))
+            self.histograma = np.empty((n_simulaciones, self.modelo.n_organismos))
 
-            add_metodo(self, plot_recorrido_targets)
+            add_metodo(self, plot_histograma)
 
-    def inicializar(self, closing_time, n_simulacion):
-        pass
-
-    def actualizar(self, t, n_simulacion):
-        pass
 
     def finalizar(self, t, s):
 
         for i, organismo in enumerate(self.modelo):
-            self.recorrido_targets[s, i] = (organismo.n_explotados /
-                                            organismo.espacio_recorrido)
+            self.histograma[s, i] = getattr(organismo, self.name)
 
 
-class RecorridoTargetsMultiple(Estadistica):
-    """Estadistica para calcular a lo largo de varias simulaciones la cantidad
-        de Targets entre espacio recorrido cambiando el parametro por cada estadistica
 
-        Solo valido con 1 organismo
+class VariacionParametroBloques(Estadistica):
+    """Estadistica para calcular a lo largo de varias simulaciones la media y la
+    variacion estandar de un parametro.
     """
 
-    def __init__(self, parametros, n_organismos=1):
+    def __init__(self, name, parametros, n_organismos=1):
+        """
+        name: Nombre del parametro
+        parametros: Lista con las variaciones del parametro del plot
+        n_organismo: Numero de organismos que habra en el sistema
+
+        """
         self.parametros = parametros
         self.n_bloques = len(parametros)
-        self.bloque_actual = -1
         self.n_organismos = n_organismos
-
+        self.bloque_actual = -1
+        self.name = name
 
 
     def add_modelo(self, modelo):
         """Vincula la estadistica con un modelo. Inicializa el vector de medias"""
         self.modelo = modelo
         self.medias = np.zeros((self.n_bloques, self.n_organismos))
+        self.desviaciones = np.zeros((self.n_bloques, self.n_organismos))
         add_metodo(self, plot_medias)
 
 
@@ -179,8 +192,11 @@ class RecorridoTargetsMultiple(Estadistica):
     def finalizar(self, t, s):
 
         for i, organismo in enumerate(self.modelo):
-            self.medias[self.bloque_actual, i] += (organismo.n_explotados /
-                                            organismo.espacio_recorrido)
+            self.medias[self.bloque_actual, i] += getattr(organismo, self.name)
+            self.desviaciones[self.bloque_actual, i] += getattr(organismo, self.name)**2
+
 
     def finalizar_bloque(self):
             self.medias[self.bloque_actual] /= self.n_simulaciones
+            self.desviaciones[self.bloque_actual] /= self.n_simulaciones
+            self.desviaciones[self.bloque_actual] -= self.medias[self.bloque_actual]

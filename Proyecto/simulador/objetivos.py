@@ -194,7 +194,8 @@ class ObjetivosAgrupados(ObjetivosDesechables):
 
         self.numero_grupos=numero_grupos
         self.std_grupos = std
-        self.grupos = grupos
+        self.grupos_iniciales = grupos
+        self.grupos = None
 
         super().__init__(numero_objetivos_grupo, espacio, usos)
 
@@ -207,7 +208,10 @@ class ObjetivosAgrupados(ObjetivosDesechables):
         lista_objetivos = np.empty((numero_objetivos, 2))
 
         # Inicializamos los centros de los grupos
-        if self.grupos is None:
+        if self.grupos_iniciales is not None:
+            self.grupos = np.array(self.grupos_iniciales, dtype=float).reshape(
+                (self.numero_grupos, 2))
+        else:
             self.grupos = np.empty((self.numero_grupos, 2))
 
             self.grupos[:,0] = np.random.uniform(*self.espacio.ejex,
@@ -215,9 +219,7 @@ class ObjetivosAgrupados(ObjetivosDesechables):
 
             self.grupos[:,1] = np.random.uniform(*self.espacio.ejey,
                                                       size=self.numero_grupos)
-        else:
-            self.grupos = np.array(self.grupos, dtype=float).reshape(
-                (self.numero_grupos, 2))
+
 
         # Inicializamos cada uno de los grupos
         for i in range(self.numero_grupos):

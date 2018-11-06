@@ -15,7 +15,7 @@ os.chdir(script_path)
 sys.path.append("../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import RecorridoTargets
+from simulador import TargetEspacioOrganismo, SimulacionHistograma
 from simulador import RandomWalker
 
 
@@ -40,14 +40,18 @@ modelo = Modelo(espacio, objetivos)
 organismo = RandomWalker(r, std=std, posicion=inicial)
 modelo.add_organismo(organismo)
 
+modelo.add_estadistica(TargetEspacioOrganismo())
+
 # Especificamos que estadisticas queremos recolectar
-estadistica = RecorridoTargets()
-modelo.add_estadistica(estadistica)
+histograma = SimulacionHistograma("recorrido_targets")
+modelo.add_estadistica(histograma)
+
 
 modelo.simular(t, n_simulaciones, verbose=1)
 
-estadistica.plot_recorrido_targets()
-print("Media", np.mean(estadistica.recorrido_targets))
-print("Desviacion", np.std(estadistica.recorrido_targets))
+histograma.plot_histograma()
+
+print("Media", np.mean(histograma.histograma))
+print("Desviacion", np.std(histograma.histograma))
 
 plt.show()

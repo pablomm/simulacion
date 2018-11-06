@@ -14,12 +14,13 @@ os.chdir(script_path)
 sys.path.append("../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import RecorridoTargetsMultiple
-from simulador import RandomWalker, Trayectoria, Explotados
+from simulador import TargetEspacioOrganismo, VariacionParametroBloques
+from simulador import RandomWalker
 
 
 n_simulaciones = 50
 n_variaciones = 30
+
 # Configuracion del espacio
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
@@ -37,9 +38,11 @@ objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
 
 # Especificamos que estadisticas queremos recolectar
-estadistica = RecorridoTargetsMultiple(std)
-modelo.add_estadistica(estadistica)
+modelo.add_estadistica(TargetEspacioOrganismo())
 
+# Recolectamos medias y desviaciones al final de cada bloque de simulacion
+estadistica = VariacionParametroBloques("recorrido_targets", std)
+modelo.add_estadistica(estadistica)
 
 for desviacion in std:
     # Creamos un random walker y lo añadimos al modelo
