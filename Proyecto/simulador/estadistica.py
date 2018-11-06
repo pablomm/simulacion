@@ -200,3 +200,24 @@ class VariacionParametroBloques(Estadistica):
             self.medias[self.bloque_actual] /= self.n_simulaciones
             self.desviaciones[self.bloque_actual] /= self.n_simulaciones
             self.desviaciones[self.bloque_actual] -= self.medias[self.bloque_actual]
+
+
+class RadioDifusion(Estadistica):
+    """Clase para recolectar el radio de difusion.
+    """
+
+    def inicializar(self, closing_time, n_simulacion):
+
+        # Añade las variables donde guardara las trayectorias
+        # Y las inicializa con la posicion inicial
+        for organismo in self.modelo:
+            organismo.radio_difusion = 0
+            add_metodo(organismo, plot_radio_difusion)
+
+    def actualizar(self, t, n_simulacion):
+
+        for organismo in self.modelo:
+
+            radio_actual = np.linalg.norm(organismo.posicion_inicial_simulacion - organismo.posicion_real)
+
+            organismo.radio_difusion = max(organismo.radio_difusion, radio_actual)
