@@ -196,18 +196,16 @@ class ObjetivosAgrupados(ObjetivosDesechables):
     def __init__(self, numero_objetivos_grupo, espacio, numero_grupos=1, std=1.,
                  usos=1, grupos = None):
 
-
+        self.numero_objetivos_grupo = numero_objetivos_grupo
         self.numero_grupos=numero_grupos
         self.std_grupos = std
         self.grupos_iniciales = grupos
         self.grupos = None
 
-        super().__init__(numero_objetivos_grupo, espacio, usos)
+        super().__init__(numero_objetivos_grupo*numero_grupos, espacio, usos)
 
-    def inicializar_objetivos(self, numero_objetivos_grupo):
+    def inicializar_objetivos(self, numero_objetivos):
         """Inicializa los objetivos en el espacio de manera uniforme"""
-
-        numero_objetivos = numero_objetivos_grupo * self.numero_grupos
 
         # Genera objetivos agrupados
         lista_objetivos = np.empty((numero_objetivos, 2))
@@ -228,16 +226,16 @@ class ObjetivosAgrupados(ObjetivosDesechables):
 
         # Inicializamos cada uno de los grupos
         for i in range(self.numero_grupos):
-            a = i*numero_objetivos_grupo
-            b = a + numero_objetivos_grupo
+            a = i*self.numero_objetivos_grupo
+            b = a + self.numero_objetivos_grupo
             lista_objetivos[a:b, 0] = np.random.normal(loc=self.grupos[i,0],
                                                        scale=self.std_grupos,
-                                                       size=numero_objetivos_grupo)
+                                                       size=self.numero_objetivos_grupo)
 
 
             lista_objetivos[a:b, 1] = np.random.normal(loc=self.grupos[i,1],
                                                         scale=self.std_grupos,
-                                                        size=numero_objetivos_grupo)
+                                                        size=self.numero_objetivos_grupo)
 
         lista_objetivos[:,0] = np.mod(
             lista_objetivos[:,0] - self.espacio.ejex[0],
