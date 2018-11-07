@@ -28,6 +28,11 @@ class Objetivos:
             self._numero_objetivos = n
 
     @property
+    def numero_objetivos_inicial(self):
+        """Devuelve el numero de objetivos inicial del sistema"""
+        return self.__n
+    
+    @property
     def numero_objetivos(self):
         """Devuelve el numero de objetivos actuales en el sistema"""
         return self._numero_objetivos

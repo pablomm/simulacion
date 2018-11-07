@@ -6,6 +6,7 @@ import numpy as np
 import types
 
 from .plots import *
+from .plots_jari import *
 
 def add_metodo(instancia, funcion):
     """Añade un metodo a una instancia de una clase
@@ -47,7 +48,7 @@ class Estadistica:
         pass
 
 
-    def inicializar_simulaciones(self, numero_simulaciones):
+    def inicializar_simulaciones(self, numero_simulaciones, closing_time):
         """Llamado al principio de las simulaciones para preparar la
         estadistica"""
         pass
@@ -96,21 +97,34 @@ class Trayectoria(Estadistica):
 
 class Explotados(Estadistica):
     """Estadistica para almacenar los elementos explotados en cada paso"""
+    
+    def inicializar_simulaciones(self, numero_simulaciones, closing_time):
+        for organismo in self.modelo:
+            organismo.medias_explotados = np.zeros(closing_time)
+            add_metodo(organismo, plot_numero_explotados)
 
     def inicializar(self, closing_time, n_simulacion):
         for organismo in self.modelo:
             organismo.explotados = np.full(closing_time, None, dtype=object)
+            organismo.numero_explotados_t = np.zeros(closing_time)
             add_metodo(organismo, plot_explotados)
-
 
     def actualizar(self, t, n_simulacion):
 
         for organismo in self.modelo:
             if len(organismo.explotados_step) > 0:
                 organismo.explotados[t] = organismo.explotados_step
+            organismo.numero_explotados_t[t:]  = organismo.n_explotados
 
     def finalizar(self, t, n_simulacion):
-        pass
+
+        for organismo in self.modelo:
+            organismo.medias_explotados += organismo.numero_explotados_t
+
+    def finalizar_bloque(self):
+        
+        for organismo in self.modelo:
+            organismo.medias_explotados /= self.modelo.n_simulaciones
 
 
 
@@ -137,7 +151,7 @@ class SimulacionHistograma(Estadistica):
         self.name = name
         super().__init__()
 
-    def inicializar_simulaciones(self, n_simulaciones):
+    def inicializar_simulaciones(self, n_simulaciones, closing_time):
 
             self.histograma = np.empty((n_simulaciones, self.modelo.n_organismos))
 
@@ -178,7 +192,7 @@ class VariacionParametroBloques(Estadistica):
         add_metodo(self, plot_medias)
 
 
-    def inicializar_simulaciones(self, n_simulaciones):
+    def inicializar_simulaciones(self, n_simulaciones, closing_time):
 
         self.n_simulaciones = n_simulaciones
         self.bloque_actual += 1
