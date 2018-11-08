@@ -66,6 +66,12 @@ class Espacio:
     def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
         pass
 
+    @abc.abstractmethod
+    def areaMatrix(self,radio):
+        pass
+    @abc.abstractmethod
+    def getFilaColumnaAreaMatrix(self,pos):
+        pass
     def calcular_angulo_mov(self, inicial, final):
 
         y = final[1]-inicial[1]
@@ -156,6 +162,12 @@ class EspacioToroidalFinito(Espacio):
         ax.plot(trayectoria_real[j:i+1,0], trayectoria_real[j:i+1,1], c=c)
 
         return ax
+
+    def areaMatrix(self,radio):
+        """Da una simplificacion del espacio actual en cuadrantes"""
+        return np.zeros((int(np.ceil(self.size[0]/radio)), int(np.ceil(self.size[0]/radio))))
+    def getFilaColumnaAreaMatrix(self,pos,radio):
+        return pos/radio
 
 
 class EspacioFinito(Espacio):

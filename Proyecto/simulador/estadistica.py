@@ -200,3 +200,4 @@ class VariacionParametroBloques(Estadistica):
             self.medias[self.bloque_actual] /= self.n_simulaciones
             self.desviaciones[self.bloque_actual] /= self.n_simulaciones
             self.desviaciones[self.bloque_actual] -= self.medias[self.bloque_actual]
+
