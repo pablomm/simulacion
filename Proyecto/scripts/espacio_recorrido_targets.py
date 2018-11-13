@@ -54,4 +54,7 @@ histograma.plot_histograma()
 print("Media", np.mean(histograma.histograma))
 print("Desviacion", np.std(histograma.histograma))
 
+
+histograma.histograma.dump("datos_histograma_espacio_recorrido_targets.txt")
+
 plt.show()
