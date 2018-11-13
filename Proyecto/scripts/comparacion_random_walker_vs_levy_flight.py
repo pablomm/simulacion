@@ -15,7 +15,7 @@ from simulador import Trayectoria, Explotados
 from simulador import RandomWalker, LevyFlight
 from simulador import Distancias
 
-n_simulaciones = 100
+n_simulaciones = 50
 
 # Caso objetivos uniformes
 n_objetivos = 200 # Numero de objetivos
@@ -27,7 +27,7 @@ std_grupos = 3 # Desviacion estandar de los grupos
 size = (100.,100.) # Dimensiones del espacio
 r = 3 # Radio de explotacion
 std = 1.5 # Desviacion estandar del movimiento browniano
-t = 1000 # Tiempo a simular
+t = 2000 # Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
 #Organismo LevyFlight
 a = 1.5 # alpha de distribucion de levy
@@ -70,7 +70,7 @@ organismo.plot_distancias(param="random_walker")
 organismo2.plot_distancias(param="levy_flight")
 
 plt.figure()
-organismo.plot_numero_explotados(modelo, param="random_walker")
-organismo2.plot_numero_explotados(modelo, param="levy_flight")
+organismo.plot_numero_explotados(modelo, param="random_walker", plot_ci=True)
+organismo2.plot_numero_explotados(modelo, param="levy_flight", plot_ci=True)
 
 plt.show()

@@ -8,7 +8,7 @@ import numpy as np
 import types
 
 from .plots import *
-from .plots_jari import *
+from .plots_temp import *
 
 class Distancias(Estadistica):
     """Estadistica para almacenar los elementos explotados en cada paso"""
@@ -16,6 +16,7 @@ class Distancias(Estadistica):
     def inicializar_simulaciones(self, numero_simulaciones, closing_time):
         for organismo in self.modelo:
             organismo.medias_distancias = np.zeros(closing_time)
+            organismo.std_distancias = np.zeros(closing_time)
             add_metodo(organismo, plot_distancias)
 
     def inicializar(self, closing_time, n_simulacion):
@@ -25,14 +26,18 @@ class Distancias(Estadistica):
     def actualizar(self, t, n_simulacion):
 
         for organismo in self.modelo:
-            organismo.distancias[t:] = organismo.espacio_recorrido
+            organismo.distancias[t] = organismo.espacio_recorrido
 
     def finalizar(self, t, n_simulacion):
 
         for organismo in self.modelo:
             organismo.medias_distancias += organismo.distancias
+            organismo.std_distancias += organismo.distancias**2
 
     def finalizar_bloque(self):
 
         for organismo in self.modelo:
             organismo.medias_distancias /= self.modelo.n_simulaciones
+            organismo.std_distancias /= self.modelo.n_simulaciones
+            organismo.std_distancias -= organismo.medias_distancias**2
+            organismo.std_distancias = np.sqrt(organismo.std_distancias)

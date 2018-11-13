@@ -6,7 +6,7 @@ import numpy as np
 import types
 
 from .plots import *
-from .plots_jari import *
+from .plots_temp import *
 
 def add_metodo(instancia, funcion):
     """Añade un metodo a una instancia de una clase
@@ -101,6 +101,7 @@ class Explotados(Estadistica):
     def inicializar_simulaciones(self, numero_simulaciones, closing_time):
         for organismo in self.modelo:
             organismo.medias_explotados = np.zeros(closing_time)
+            organismo.std_explotados = np.zeros(closing_time)
             add_metodo(organismo, plot_numero_explotados)
 
     def inicializar(self, closing_time, n_simulacion):
@@ -114,17 +115,21 @@ class Explotados(Estadistica):
         for organismo in self.modelo:
             if len(organismo.explotados_step) > 0:
                 organismo.explotados[t] = organismo.explotados_step
-            organismo.numero_explotados_t[t:]  = organismo.n_explotados
+            organismo.numero_explotados_t[t]  = organismo.n_explotados
 
     def finalizar(self, t, n_simulacion):
 
         for organismo in self.modelo:
             organismo.medias_explotados += organismo.numero_explotados_t
+            organismo.std_explotados += organismo.numero_explotados_t**2
 
     def finalizar_bloque(self):
         
         for organismo in self.modelo:
             organismo.medias_explotados /= self.modelo.n_simulaciones
+            organismo.std_explotados /= self.modelo.n_simulaciones
+            organismo.std_explotados -= organismo.medias_explotados**2
+            organismo.std_explotados = np.sqrt(organismo.std_explotados)
 
 
 
