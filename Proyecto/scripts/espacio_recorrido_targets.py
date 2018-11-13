@@ -49,12 +49,13 @@ modelo.add_estadistica(histograma)
 
 modelo.simular(t, n_simulaciones, verbose=1)
 
-histograma.plot_histograma()
+
 
 print("Media", np.mean(histograma.histograma))
 print("Desviacion", np.std(histograma.histograma))
 
+np.savetxt("datos_histograma_espacio_recorrido_targets.csv",
+              histograma.histograma, delimiter=",")
 
-histograma.histograma.dump("datos_histograma_espacio_recorrido_targets.txt")
 
 plt.show()
