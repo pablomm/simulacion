@@ -280,7 +280,7 @@ class RandomWalkerVFija(OrganismoVFija):
         self.std = std
         self.mu = mu
 
-        super().__init__(r_explotacion,velocidad=velocidad, stop_eat=stop_eat,
+        super().__init__(r_explotacion=r_explotacion, velocidad=velocidad, stop_eat=stop_eat,
                          posicion=posicion, name="Random Walker V Fija")
 
     def generar_movimiento(self):
@@ -288,3 +288,30 @@ class RandomWalkerVFija(OrganismoVFija):
         self.theta = np.random.uniform(0,2*np.pi)
         self.remaining = np.linalg.norm(np.random.normal(scale=self.std,
                                                          loc=self.mu, size=2))
+
+class LevyFlightVFija(OrganismoVFija):
+    
+    def __init__(self, r_explotacion=1., velocidad=1., a=1.5, b=0., loc=0., scale=1.,
+                 maximo=np.Inf, minimo=0, stop_eat=False, posicion=None):
+        
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.maximo = maximo
+        self.minimo = minimo
+        self.levy = st.levy_stable(a, b, loc, scale)
+        
+        super().__init__(r_explotacion=r_explotacion, velocidad=velocidad, stop_eat=stop_eat,
+                         posicion=posicion, name="Levy Flight")
+    
+    def generar_movimiento(self):
+        
+        self.theta = np.random.uniform(0,2*np.pi)
+        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+        absd = abs(d)
+        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+        d = abs(d)
+        
+        self.remaining = min(max(d,self.minimo), self.maximo)
+
