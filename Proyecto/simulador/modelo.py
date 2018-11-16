@@ -76,7 +76,7 @@ class Modelo:
         self.n_bloques += 1
 
         for estadistica in self.estadisticas:
-            estadistica.inicializar_simulaciones(self.n_simulaciones)
+            estadistica.inicializar_simulaciones(self.n_simulaciones, closing_time)
 
         if verbose > 0:
             print(40*" ", end="\r")

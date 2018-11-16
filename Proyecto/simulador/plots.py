@@ -93,3 +93,22 @@ def plot_medias(estadistica, ax=None, **kwargs):
         ax.plot(estadistica.parametros, estadistica.medias[:,i])
 
     return ax
+
+
+def plot_radio_difusion(organismo, ax=None, color="default", alpha=None):
+    if ax is None:
+        ax = plt.gca()
+
+    if color == "default":
+        color = Organismo.color_area_visualizada
+
+    if alpha is None:
+        alpha = 0.5
+
+
+    for p in organismo.espacio.coordenadas_equivalentes(organismo.posicion_inicial_simulacion):
+        zona = plt.Circle(p, organismo.radio_difusion,
+                      color=color, alpha=alpha)
+        ax.add_artist(zona)
+
+    return ax

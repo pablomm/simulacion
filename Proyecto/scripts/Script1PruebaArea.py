@@ -19,7 +19,7 @@ n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
 r = 3 # Radio de explotacion
 std = 1. # Desviacion estandar del movimiento browniano
-t = np.linspace(500,1000,100)# Tiempo a simular
+t = np.linspace(500,1000,10)# Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
 
 # Configuracion Plot
@@ -36,12 +36,12 @@ modelo.add_organismo(organismo)
 
 # Especificamos que estadisticas queremos recolectar
 modelo.add_estadistica(EstadisticaArea())
-valores = np.zeros(100)
+valores = np.zeros(10)
 for i,x in  enumerate(t):
-  modelo.simular(x,20)
+  modelo.simular(x,1)
   for estadistica in modelo.estadisticas:
     valores[i] = np.mean(estadistica.datos) 
     estadistica.inicializar(0,20)
-
+plt.figure()
 plt.plot(t,valores)
 plt.show()

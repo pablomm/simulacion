@@ -163,11 +163,51 @@ class EspacioToroidalFinito(Espacio):
 
         return ax
 
-    def areaMatrix(self,radio):
+    def areaMatrix(self,radio,valorDiscretizacion=1):
         """Da una simplificacion del espacio actual en cuadrantes"""
-        return np.zeros((int(np.ceil(self.size[0]/radio)), int(np.ceil(self.size[0]/radio))))
-    def getFilaColumnaAreaMatrix(self,pos,radio):
-        return pos/radio
+        return np.zeros((int(np.ceil(self.size[0]/radio*valorDiscretizacion)), int(np.ceil(self.size[0]/radio*valorDiscretizacion))))
+    def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=1):
+        pos_actual = (pos/radio*valorDiscretizacion).astype(int)
+        pos_0 =(pos_actual -1*radio*valorDiscretizacion).astype(int)
+        
+        pos_1 =(pos_actual +radio*valorDiscretizacion).astype(int)
+
+
+        [f,c] = shape
+
+
+        """
+        Ponemos valores del ejex y ejey
+        """
+        #print(pos)
+        ejex = np.array(pos_actual[0])
+        ejey = np.array(pos_actual[1])
+        if pos_0[0]<0:
+            ejex = np.append(ejex,*[range(0,pos_actual[0]+1)]) 
+            ejex = np.append(ejex,*[range(pos_0[0]+f,f)])
+        else:
+            ejex = np.append(ejex,*[range(pos_0[0],pos_actual[0])])
+
+        if pos_0[1] < 0:
+            ejey = np.append(ejey,*[range(0,pos_actual[1]+1)])
+            ejey = np.append(ejey,*[range(pos_0[1]+c,c)])
+        else:
+            ejey = np.append(ejey,*[range(pos_0[1],pos_actual[1])])
+
+        if pos_1[0] >=f:
+            ejex = np.append(ejex,*[range(pos_actual[0],f)]) 
+            ejex = np.append(ejex,*[range(0,pos_1[0]-f+1)])
+        else:
+            ejex = np.append(ejex,*[range(pos_actual[0],pos_1[0])])
+
+        if pos_1[1] >= c:
+            ejey = np.append(ejey,*[range(pos_actual[1],c)]) 
+            ejey = np.append(ejey,*[range(0,pos_1[1]-c+1)])
+        else:
+            ejey = np.append(ejey,*[range(pos_actual[1],pos_1[1])])
+
+        res = itertools.product(ejex,ejey)
+        return res
 
 
 class EspacioFinito(Espacio):

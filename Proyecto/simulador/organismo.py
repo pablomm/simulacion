@@ -74,11 +74,13 @@ class Organismo:
         self.espacio = modelo.espacio
         self.objetivos = modelo.objetivos
         self.posicion = self.gen_coord_ini()
+        self.posicion_inicial_simulacion = self.posicion
         self.posicion_real = self.posicion
 
     def clear(self):
 
         self.posicion = self.gen_coord_ini()
+        self.posicion_inicial_simulacion = self.posicion
         self.posicion_real = self.posicion
         self.explotados_step = None
         self.n_explotados = 0
