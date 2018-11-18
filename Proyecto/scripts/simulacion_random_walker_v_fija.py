@@ -1,13 +1,8 @@
-"""
-Estudia  como varia el numero de targets/espacio recorrido y plotea el
-histograma de los valores obtenidos
 
-"""
 
 import os
 import sys
 import matplotlib.pyplot as plt
-import numpy as np
 
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -15,11 +10,10 @@ os.chdir(script_path)
 sys.path.append("../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import TargetEspacioOrganismo, SimulacionHistograma
-from simulador import RandomWalker
+from simulador import Trayectoria, Explotados, RadioDifusion
+from simulador import RandomWalkerVFija
 
 
-n_simulaciones = 200
 # Configuracion del espacio
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
@@ -27,7 +21,6 @@ r = 3 # Radio de explotacion
 std = 1. # Desviacion estandar del movimiento browniano
 t = 500 # Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
-
 # Configuracion Plot
 plt.style.use("seaborn")
 
@@ -37,25 +30,24 @@ objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
 
 # Creamos un random walker y lo añadimos al modelo
-organismo = RandomWalker(r, std=std, posicion=inicial)
+organismo = RandomWalkerVFija(r, std=std, posicion=inicial)
 modelo.add_organismo(organismo)
 
-modelo.add_estadistica(TargetEspacioOrganismo())
-
 # Especificamos que estadisticas queremos recolectar
-histograma = SimulacionHistograma("recorrido_targets")
-modelo.add_estadistica(histograma)
+modelo.add_estadistica(Trayectoria())
+modelo.add_estadistica(Explotados())
+modelo.add_estadistica(RadioDifusion())
 
+modelo.simular(t)
 
-modelo.simular(t, n_simulaciones, verbose=1)
+# Dibujamos el resultado de la simulacion
+organismo.plot_radio_difusion()
+organismo.plot_area_explotada()
+modelo.plot()
+organismo.plot_trayectoria()
+organismo.plot_explotados()
 
-
-
-print("Media", np.mean(histograma.histograma))
-print("Desviacion", np.std(histograma.histograma))
-
-np.savetxt("datos_histograma_espacio_recorrido_targets.csv",
-              histograma.histograma, delimiter=",")
-
+print("radio", organismo.radio_difusion)
+print("espacio recorrido", organismo.espacio_recorrido)
 
 plt.show()
