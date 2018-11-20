@@ -112,3 +112,10 @@ def plot_radio_difusion(organismo, ax=None, color="default", alpha=None):
         ax.add_artist(zona)
 
     return ax
+
+
+def plot_mapa_calor(organismo, ax=None, color="YlOrBr"):
+    if ax is None:
+        ax = plt.gca()
+
+    ax.imshow(v, cmap="YlOrBr")
