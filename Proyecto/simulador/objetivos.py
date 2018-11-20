@@ -101,6 +101,17 @@ class Objetivos:
 
         return self.lista_objetivos[objs]
 
+    def objetivo_mas_cercano(self, posicion, lista_indices):
+        """Devuelve la coordenada del objetivo mas cercano de los dados"""
+        
+        menor_dist = np.zeros(len(lista_indices))
+        
+        for j, idx in enumerate(lista_indices):
+            coordenadas = self.espacio.coordenadas_equivalentes(self.lista_objetivos[idx])
+            menor_dist[j] = np.min(np.linalg.norm( coordenadas - posicion, axis=1))
+                
+        return self.lista_objetivos[lista_indices[np.argmin(menor_dist)]]
+
     def __call__(self, *, r=None, coordenada=None, return_index=False):
 
         return self.objetivos(r=r, coordenada=coordenada,
