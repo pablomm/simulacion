@@ -1,4 +1,4 @@
-from .estadistica import Estadistica,Trayectoria
+from .estadistica import Estadistica,Trayectoria,add_metodo
 import numpy as np
 from .plots import *
 class EstadisticaArea(Estadistica):
@@ -8,8 +8,9 @@ class EstadisticaArea(Estadistica):
     def inicializar_simulaciones(self, closing_time, n_simulacion):
         for organismo in self.modelo:
             organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
+            add_metodo(organismo,plot_mapa_calor)
         
-        self.datos = None
+        self.areaRecorrida = None
         self.areaRep = None
 
     def actualizar(self, t, n_simulacion):
@@ -22,16 +23,20 @@ class EstadisticaArea(Estadistica):
     def finalizar(self, t, s):
         for organismo in self.modelo:
             [f,c] = np.shape(organismo.MatrizArea)
-            valor=sum(sum(organismo.MatrizArea > 0))/(f*c)
-            rep = sum(sum(organismo.MatrizArea > 1))/(f*c)
-            if (self.datos is None):
-                self.datos = np.array(valor)
+            area= np.sum(organismo.MatrizArea > 0)/(f*c)
+            rep = np.sum(organismo.MatrizArea > 1)/(f*c)
+            self.ratioRepeticion = np.sum(organismo.MatrizArea !=0)/np.sum(organismo.MatrizArea)
+            if (self.areaRecorrida is None):
+                self.areaRecorrida = np.array(area)
             else:
-                self.datos = np.hstack((self.datos,valor))
+                self.areaRecorrida = np.hstack((self.areaRecorrida,area))
             if (self.areaRep is None):
                 self.areaRep = np.array(rep)
             else:
                 self.areaRep = np.hstack((self.areaRep,rep))
+            self.matrix  = organismo.MatrizArea
+
+
 
 
 """class CalcularVariarAreaConTiempo(VariacionParametroBloques):
