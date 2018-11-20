@@ -163,9 +163,9 @@ class EspacioToroidalFinito(Espacio):
 
         return ax
 
-    def areaMatrix(self,radio,valorDiscretizacion=1):
+    def areaMatrix(self,radio,valorDiscretizacion=5):
         """Da una simplificacion del espacio actual en cuadrantes"""
-        return np.zeros((int(np.ceil(self.size[0]/radio*valorDiscretizacion)), int(np.ceil(self.size[0]/radio*valorDiscretizacion))))
+        return np.zeros((int(np.ceil(self.size[0]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
     def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=1):
         pos_actual = (pos/radio*valorDiscretizacion).astype(int)
         pos_0 =(pos_actual -1*radio*valorDiscretizacion).astype(int)

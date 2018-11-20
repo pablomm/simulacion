@@ -10,7 +10,7 @@ class EstadisticaArea(Estadistica):
             organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
         
         self.datos = None
-    
+        self.areaRep = None
 
     def actualizar(self, t, n_simulacion):
 
@@ -23,12 +23,15 @@ class EstadisticaArea(Estadistica):
         for organismo in self.modelo:
             [f,c] = np.shape(organismo.MatrizArea)
             valor=sum(sum(organismo.MatrizArea > 0))/(f*c)
-            #print(self.datos)
-            #print(s)
+            rep = sum(sum(organismo.MatrizArea > 1))/(f*c)
             if (self.datos is None):
                 self.datos = np.array(valor)
             else:
                 self.datos = np.hstack((self.datos,valor))
+            if (self.areaRep is None):
+                self.areaRep = np.array(rep)
+            else:
+                self.areaRep = np.hstack((self.areaRep,rep))
 
 
 """class CalcularVariarAreaConTiempo(VariacionParametroBloques):
