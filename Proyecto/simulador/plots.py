@@ -1,5 +1,6 @@
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from .organismo import Organismo
 
@@ -118,4 +119,4 @@ def plot_mapa_calor(organismo, ax=None, color="YlOrBr"):
     if ax is None:
         ax = plt.gca()
 
-    ax.imshow(organismo.MatrizArea, cmap="YlOrBr")
+    ax.imshow(organismo.MatrizArea.T, cmap="YlOrBr",origin="lower")

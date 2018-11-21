@@ -12,6 +12,7 @@ class EstadisticaArea(Estadistica):
         
         self.areaRecorrida = None
         self.areaRep = None
+        self.ratioRepeticion = None
 
     def actualizar(self, t, n_simulacion):
 
@@ -25,7 +26,8 @@ class EstadisticaArea(Estadistica):
             [f,c] = np.shape(organismo.MatrizArea)
             area= np.sum(organismo.MatrizArea > 0)/(f*c)
             rep = np.sum(organismo.MatrizArea > 1)/(f*c)
-            self.ratioRepeticion = np.sum(organismo.MatrizArea !=0)/np.sum(organismo.MatrizArea)
+            if self.ratioRepeticion is None:
+                self.ratioRepeticion = np.array(np.sum(organismo.MatrizArea !=0)/np.sum(organismo.MatrizArea))
             if (self.areaRecorrida is None):
                 self.areaRecorrida = np.array(area)
             else:
@@ -34,7 +36,7 @@ class EstadisticaArea(Estadistica):
                 self.areaRep = np.array(rep)
             else:
                 self.areaRep = np.hstack((self.areaRep,rep))
-            self.matrix  = organismo.MatrizArea
+            
 
 
 

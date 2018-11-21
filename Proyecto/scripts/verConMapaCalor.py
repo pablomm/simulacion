@@ -20,7 +20,7 @@ from simulador import RandomWalker
 n = 1
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
-r = 3 # Radio de explotacion
+r = 1 # Radio de explotacion
 std = 1. # Desviacion estandar del movimiento browniano
 t = np.linspace(50,1000,n)# Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
@@ -50,12 +50,11 @@ modelo.simular(500,1)
 
 estadistica = modelo.estadisticas[0]
 
-print(estadistica.matrix)
 print(estadistica.areaRecorrida)
 organismo.plot_area_explotada()
 modelo.plot()
 organismo.plot_trayectoria()
-plt.figure()
+#plt.figure()
 organismo.plot_mapa_calor()
 #organismo.plot_explotados()
 

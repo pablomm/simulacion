@@ -171,7 +171,7 @@ class EspacioToroidalFinito(Espacio):
     def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
         if valorDiscretizacion is None:
             valorDiscretizacion = radio
-        pos_actual = (pos/radio*valorDiscretizacion).astype(int)
+        pos_actual = (pos*radio*valorDiscretizacion).astype(int)
         pos_0 =(pos_actual -1*radio*valorDiscretizacion).astype(int)
         
         pos_1 =(pos_actual +radio*valorDiscretizacion).astype(int)
@@ -188,25 +188,25 @@ class EspacioToroidalFinito(Espacio):
         ejey = np.array(pos_actual[1])
         if pos_0[0]<0:
             ejex = np.append(ejex,*[range(0,pos_actual[0]+1)]) 
-            ejex = np.append(ejex,*[range(pos_0[0]+f,f)])
+            ejex = np.append(ejex,*[range(pos_0[0]+c,c)])
         else:
             ejex = np.append(ejex,*[range(pos_0[0],pos_actual[0])])
 
         if pos_0[1] < 0:
             ejey = np.append(ejey,*[range(0,pos_actual[1]+1)])
-            ejey = np.append(ejey,*[range(pos_0[1]+c,c)])
+            ejey = np.append(ejey,*[range(pos_0[1]+f,f)])
         else:
             ejey = np.append(ejey,*[range(pos_0[1],pos_actual[1])])
 
-        if pos_1[0] >=f:
-            ejex = np.append(ejex,*[range(pos_actual[0],f)]) 
-            ejex = np.append(ejex,*[range(0,pos_1[0]-f+1)])
+        if pos_1[0] >=c:
+            ejex = np.append(ejex,*[range(pos_actual[0],c)]) 
+            ejex = np.append(ejex,*[range(0,pos_1[0]-c+1)])
         else:
             ejex = np.append(ejex,*[range(pos_actual[0],pos_1[0])])
 
-        if pos_1[1] >= c:
-            ejey = np.append(ejey,*[range(pos_actual[1],c)]) 
-            ejey = np.append(ejey,*[range(0,pos_1[1]-c+1)])
+        if pos_1[1] >= f:
+            ejey = np.append(ejey,*[range(pos_actual[1],f)]) 
+            ejey = np.append(ejey,*[range(0,pos_1[1]-f+1)])
         else:
             ejey = np.append(ejey,*[range(pos_actual[1],pos_1[1])])
 
