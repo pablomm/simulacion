@@ -4,7 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
-import statsmodels.api as sm 
+import statsmodels.api as sm
 
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -63,4 +63,4 @@ plt.show()
 
     #estadistica.inicializar(0,20)
 #Vamos a suavizar la curva restando las frecuencias no importantes
-lowess = sm.nonparametric.lowess(valores, t, frac=0.1) 
+lowess = sm.nonparametric.lowess(valores, t, frac=0.1)

@@ -1,6 +1,5 @@
 
 import abc
-import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,15 +68,15 @@ class Espacio:
     @abc.abstractmethod
     def areaMatrix(self,radio):
         pass
+    
     @abc.abstractmethod
     def getFilaColumnaAreaMatrix(self,pos):
         pass
+    
     def calcular_angulo_mov(self, inicial, final):
+        y = final - inicial
 
-        y = final[1]-inicial[1]
-        x = final[0]-inicial[0]
-
-        return math.atan2(y, x)
+        return np.arctan2(y[1], y[0])
 
     def plot(self, ax=None):
 
@@ -167,7 +166,8 @@ class EspacioToroidalFinito(Espacio):
         if valorDiscretizacion is None:
             valorDiscretizacion = radio
         """Da una simplificacion del espacio actual en cuadrantes"""
-        return np.zeros((int(np.ceil(self.size[0]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
+        return np.zeros((int(np.ceil(self.size[1]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
+    
     def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
         if valorDiscretizacion is None:
             valorDiscretizacion = radio

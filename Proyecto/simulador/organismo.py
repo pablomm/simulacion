@@ -447,9 +447,8 @@ class Organismo2EtapasActivo(OrganismoVFija):
             if len(indices_deteccion)>0: #De momento lo calcula en cada momento
                 coord = self.objetivos.objetivo_mas_cercano(posicion=self.posicion,
                                         lista_indices = indices_deteccion)
-                dif = coord - self.posicion
-                self.theta = np.arctan(dif[1]/dif[0])
-                self.remaining = np.linalg.norm(dif)
+                self.theta = self.espacio.calcular_angulo_mov( self.posicion, coord)
+                self.remaining = np.linalg.norm( coord - self.posicion )
 
             while v > 0:
 
