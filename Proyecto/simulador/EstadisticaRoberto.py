@@ -10,9 +10,8 @@ class EstadisticaArea(Estadistica):
             organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
             add_metodo(organismo,plot_mapa_calor)
         
-        self.areaRecorrida = None
-        self.areaRep = None
-        self.ratioRepeticion = None
+        self.areaRecorrida = None #TODO hacerlo para cada organismo??? Nuestro proyecto es solo para un organismo es indiferente
+        self.areaRep = None #TODO hacerlo para cada organismo??? 
 
     def actualizar(self, t, n_simulacion):
 
@@ -21,6 +20,7 @@ class EstadisticaArea(Estadistica):
             #print(int(pos[0]))
             for p in pos:
                 organismo.MatrizArea[p] +=1
+
     def finalizar(self, t, s):
         for organismo in self.modelo:
             [f,c] = np.shape(organismo.MatrizArea)

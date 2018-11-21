@@ -137,7 +137,7 @@ class OrganismoSencillo(Organismo):
 
         self.stop_eat = stop_eat
 
-        super().__init__(r_explotacion, posicion=posicion, name=name)
+        super().__init__(r_explotacion=r_explotacion, posicion=posicion, name=name)
 
 
     def step(self):
@@ -175,7 +175,7 @@ class RandomWalker(OrganismoSencillo):
 
         self.std = std
 
-        super().__init__(r_explotacion, stop_eat=stop_eat, posicion=posicion,
+        super().__init__(r_explotacion=r_explotacion, stop_eat=stop_eat, posicion=posicion,
                          name="Random Walker")
 
     def movimiento(self):
@@ -196,7 +196,7 @@ class LevyFlight(OrganismoSencillo):
         self.minimo = minimo
         self.levy = st.levy_stable(a, b, loc, scale)
 
-        super().__init__(r_explotacion, stop_eat=stop_eat, posicion=posicion,
+        super().__init__(r_explotacion=r_explotacion, stop_eat=stop_eat, posicion=posicion,
                          name="Levy Flight")
 
     def movimiento(self):
@@ -218,7 +218,7 @@ class OrganismoVFija(Organismo):
     """Clase organismo sencillo con movimiento aleatorio
         y una unidad de tiempo por movimiento y sin radio de sensibilidad"""
 
-    def __init__(self, velocidad=1., r_explotacion=1, posicion=None,
+    def __init__(self, velocidad=1., r_explotacion=1, r_sensibilidad=0., posicion=None,
                  stop_eat=False, name="Organismo Velocidad Fija"):
 
         self.stop_eat = stop_eat
@@ -226,7 +226,7 @@ class OrganismoVFija(Organismo):
         self.remaining = 0
         self.velocidad = velocidad
 
-        super().__init__(r_explotacion, posicion=posicion, name=name)
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad, posicion=posicion, name=name)
 
 
     def step(self):
@@ -274,7 +274,7 @@ class OrganismoVFija(Organismo):
 
 class RandomWalkerVFija(OrganismoVFija):
 
-    def __init__(self, r_explotacion=1., velocidad=1., mu=0., std=1.,
+    def __init__(self, r_explotacion=1., velocidad=1., mu=0, std=1.,
                  stop_eat=False, posicion=None):
 
         self.std = std
@@ -290,10 +290,10 @@ class RandomWalkerVFija(OrganismoVFija):
                                                          loc=self.mu, size=2))
 
 class LevyFlightVFija(OrganismoVFija):
-    
+
     def __init__(self, r_explotacion=1., velocidad=1., a=1.5, b=0., loc=0., scale=1.,
                  maximo=np.Inf, minimo=0, stop_eat=False, posicion=None):
-        
+
         self.a = a
         self.b = b
         self.loc = loc
@@ -301,17 +301,214 @@ class LevyFlightVFija(OrganismoVFija):
         self.maximo = maximo
         self.minimo = minimo
         self.levy = st.levy_stable(a, b, loc, scale)
-        
+
         super().__init__(r_explotacion=r_explotacion, velocidad=velocidad, stop_eat=stop_eat,
-                         posicion=posicion, name="Levy Flight")
-    
+                         posicion=posicion, name="Levy Flight V Fija")
+
     def generar_movimiento(self):
-        
+
         self.theta = np.random.uniform(0,2*np.pi)
         d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
-        absd = abs(d)
-        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
         d = abs(d)
-        
+
         self.remaining = min(max(d,self.minimo), self.maximo)
 
+class Organismo2Etapas(OrganismoVFija):
+
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1., mu=0.,
+                std=1., a=1.5, b=0., loc=0., scale=1., maximo=np.Inf, minimo=0,
+                stop_eat=False, posicion=None):
+
+        self.std = std
+        self.mu = mu
+
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.maximo = maximo
+        self.minimo = minimo
+        self.levy = st.levy_stable(a, b, loc, scale)
+
+        self.stop_eat = stop_eat
+        self.theta = 0
+        self.remaining = 0
+        self.velocidad = velocidad
+
+        self.tipo_movimiento = 0 #Levy flight (0) por defecto, random walker (1)
+
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad,
+                        posicion=posicion, name="Organismo 2 Etapas")
+
+
+    def step(self):
+
+        indices = self.objetivos(r=self.r_explotacion,
+                                 coordenada=self.posicion, return_index=True)
+
+
+        indices_deteccion = self.objetivos(r=self.r_sensibilidad,
+                                 coordenada=self.posicion, return_index=True)
+
+
+        self.explotados_step = np.empty((0,2))
+
+        if len(indices) > 0:
+            explotados = self.objetivos.explotar_objetivo(indices)
+
+            self.n_explotados += len(explotados)
+            self.explotados_step = self.objetivos.lista_objetivos[indices]
+
+        # Solo se mueve si no hay comida o si se ha definido que por
+        # comer no pierde un turno
+        if not self.stop_eat or len(indices) == 0:
+
+            self.espacio_recorrido += self.velocidad
+            v = self.velocidad
+
+            if len(indices_deteccion)>0 and self.tipo_movimiento==0:
+                self.tipo_movimiento = 1 #Cambiamos a random walker
+                self.generar_movimiento()
+            elif len(indices_deteccion) == 0 and self.tipo_movimiento==1:
+                self.tipo_movimiento = 0 #Cambiamos a Levy flight
+                self.generar_movimiento()
+
+            while v > 0:
+
+                if self.remaining <= 0:
+                    self.generar_movimiento()
+
+                if v <= self.remaining:
+
+                    x = self.posicion + v*np.array((np.cos(self.theta),
+                                                    np.sin(self.theta)))
+                    self.remaining -= v
+                    self.posicion_real = x
+                    self.posicion = self.espacio.coordenadas(self.posicion, x)
+                    v = 0
+
+                else:
+                    x = self.posicion + self.remaining*np.array(
+                                    (np.cos(self.theta),np.sin(self.theta)))
+                    v -= self.remaining
+                    self.remaining = 0
+                    self.posicion_real = x
+                    self.posicion = self.espacio.coordenadas(self.posicion, x)
+
+    def generar_movimiento(self):
+        self.theta = np.random.uniform(0,2*np.pi)
+        if self.tipo_movimiento==1: #Random walker
+            self.remaining = np.linalg.norm(np.random.normal(scale=self.std,
+                                                             loc=self.mu, size=2))
+        else:
+            d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+            d = abs(d)
+
+            self.remaining = min(max(d,self.minimo), self.maximo)
+
+class Organismo2EtapasActivo(OrganismoVFija):
+    """Organismo que va activamente a por los objetivos dentro de su radio
+        de sensibilidad."""
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1.,
+                stop_eat=False, posicion=None, name="Organismo 2 Etapas Activo"):
+
+        self.stop_eat = stop_eat
+        self.theta = 0
+        self.remaining = 0
+        self.velocidad = velocidad
+
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad,
+                         posicion=posicion, name=name)
+
+    def step(self):
+
+        indices = self.objetivos(r=self.r_explotacion,
+                                 coordenada=self.posicion, return_index=True)
+
+
+        indices_deteccion = self.objetivos(r=self.r_sensibilidad,
+                                 coordenada=self.posicion, return_index=True)
+
+        self.explotados_step = np.empty((0,2))
+
+        if len(indices) > 0:
+            explotados = self.objetivos.explotar_objetivo(indices)
+
+            self.n_explotados += len(explotados)
+            self.explotados_step = self.objetivos.lista_objetivos[indices]
+
+        # Solo se mueve si no hay comida o si se ha definido que por
+        # comer no pierde un turno
+        if not self.stop_eat or len(indices) == 0:
+
+            self.espacio_recorrido += self.velocidad
+            v = self.velocidad
+
+            if len(indices_deteccion)>0: #De momento lo calcula en cada momento
+                coord = self.objetivos.objetivo_mas_cercano(posicion=self.posicion,
+                                        lista_indices = indices_deteccion)
+                self.theta = self.espacio.calcular_angulo_mov( self.posicion, coord)
+                self.remaining = np.linalg.norm( coord - self.posicion )
+
+            while v > 0:
+
+                if self.remaining <= 0:
+                    self.generar_movimiento()
+
+                if v <= self.remaining:
+
+                    x = self.posicion + v*np.array((np.cos(self.theta),
+                                                    np.sin(self.theta)))
+                    self.remaining -= v
+                    self.posicion_real = x
+                    self.posicion = self.espacio.coordenadas(self.posicion, x)
+                    v = 0
+
+                else:
+                    x = self.posicion + self.remaining*np.array(
+                                    (np.cos(self.theta),np.sin(self.theta)))
+                    v -= self.remaining
+                    self.remaining = 0
+                    self.posicion_real = x
+                    self.posicion = self.espacio.coordenadas(self.posicion, x)
+
+class RandomWalkerActivo(Organismo2EtapasActivo):
+
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1., mu=0, std=1.,
+                 stop_eat=False, posicion=None):
+
+        self.std = std
+        self.mu = mu
+
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad, velocidad=velocidad, stop_eat=stop_eat,
+                         posicion=posicion, name="Random Walker Activo")
+
+    def generar_movimiento(self):
+
+        self.theta = np.random.uniform(0,2*np.pi)
+        self.remaining = np.linalg.norm(np.random.normal(scale=self.std,
+                                                         loc=self.mu, size=2))
+
+class LevyFlightActivo(Organismo2EtapasActivo):
+
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1., a=1.5, b=0., loc=0., scale=1.,
+                 maximo=np.Inf, minimo=0, stop_eat=False, posicion=None):
+
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.maximo = maximo
+        self.minimo = minimo
+        self.levy = st.levy_stable(a, b, loc, scale)
+
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad, velocidad=velocidad, stop_eat=stop_eat,
+                         posicion=posicion, name="Levy Flight Activo")
+
+    def generar_movimiento(self):
+
+        self.theta = np.random.uniform(0,2*np.pi)
+        d = st.levy_stable.rvs(self.a, self.b, self.loc, self.scale)
+        d = abs(d)
+
+        self.remaining = min(max(d,self.minimo), self.maximo)
