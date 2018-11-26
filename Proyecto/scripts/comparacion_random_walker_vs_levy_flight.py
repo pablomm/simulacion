@@ -57,7 +57,7 @@ modelo.add_estadistica(Explotados())
 modelo.add_estadistica(Distancias())
 #modelo.add_estadistica(Trayectoria())
 
-modelo.simular(t, n_simulaciones=n_simulaciones) #TODO: se deberían regenerar los objetivos?
+modelo.simular(t, n_simulaciones=n_simulaciones) 
 #modelo.plot()
 #organismo.plot_trayectoria()
 #plt.figure()

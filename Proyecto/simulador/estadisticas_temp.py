@@ -41,3 +41,4 @@ class Distancias(Estadistica):
             organismo.std_distancias /= self.modelo.n_simulaciones
             organismo.std_distancias -= organismo.medias_distancias**2
             organismo.std_distancias = np.sqrt(organismo.std_distancias)
+
