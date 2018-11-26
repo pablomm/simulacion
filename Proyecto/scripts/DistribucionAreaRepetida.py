@@ -4,7 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
-import statsmodels.api as sm
+import statsmodels.api as sm 
 
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -12,20 +12,14 @@ os.chdir(script_path)
 sys.path.append("../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import EstadisticaArea,Trayectoria
+from simulador import EstadisticaArea
 from simulador import LevyFlightActivo
 
-
-# Configuracion del espacio
-n = 1
+"""
+Script para ver el area repetida (Distribucion) por el organismo
+"""
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
-r = 1 # Radio de explotacion
-std = 1. # Desviacion estandar del movimiento browniano
-t = np.linspace(50,1000,n)# Tiempo a simular
-inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
-
-# Configuracion Plot
 plt.style.use("seaborn")
 
 # Creamos el modelo, definiendo el espacio y los objetivos
@@ -37,29 +31,24 @@ modelo = Modelo(espacio, objetivos)
 organismo = LevyFlightActivo(1,3)
 modelo.add_organismo(organismo)
 
+
 # Especificamos que estadisticas queremos recolectar
 modelo.add_estadistica(EstadisticaArea())
-modelo.add_estadistica(Trayectoria())
-valores = np.zeros(n)
-IC0 = np.zeros(n)
-IC1 = np.zeros(n)
-rep = np.zeros(n)
-ICrep = np.zeros(n)
-ICrep1 = np.zeros(n)
-modelo.simular(1000,1)
 
-estadistica = modelo.estadisticas[0]
-
-print(estadistica.areaRecorrida)
-organismo.plot_area_explotada()
-modelo.plot()
-organismo.plot_trayectoria()
-plt.figure()
-organismo.plot_mapa_calor()
-#organismo.plot_explotados()
-
-plt.show()
-
-    #estadistica.inicializar(0,20)
-#Vamos a suavizar la curva restando las frecuencias no importantes
-lowess = sm.nonparametric.lowess(valores, t, frac=0.1)
+modelo.simular(500,500)
+for estadistica in modelo.estadisticas:
+  plt.figure()
+  plt.hist(estadistica.areaRep,density=False,bins='auto')
+  plt.title('Area repetida')
+  plt.figure()
+  plt.hist(estadistica.areaRecorrida,density=False,bins='auto')
+  plt.title('Area')
+  plt.figure()
+  plt.hist(estadistica.ratioRepeticion,density=False,bins='auto')
+  plt.title('Ratio')
+  plt.figure()
+  plt.hist(estadistica.ratioExplotadosArea,density=False,bins='auto')
+  plt.title('explotados')
+  #plt.figure()
+  #organismo.plot_mapa_calor()
+  plt.show()
