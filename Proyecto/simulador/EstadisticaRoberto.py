@@ -9,12 +9,15 @@ class EstadisticaArea(Estadistica):
         self.ratioRepeticion = None
         self.ratioExplotadosArea = None
         self.explotados = None
+        self.ratioRepetidoRecorrido = []
 
     def inicializar_simulaciones(self, closing_time, n_simulacion):
         for organismo in self.modelo:
-            organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
             add_metodo(organismo,plot_mapa_calor)
-        
+
+    def inicializar(self, closing_time, n_simulacion):
+        for organismo in self.modelo:
+            organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)        
         
     def actualizar(self, t, n_simulacion):
 
@@ -27,9 +30,10 @@ class EstadisticaArea(Estadistica):
     def finalizar(self, t, s):
         for organismo in self.modelo:
             [f,c] = np.shape(organismo.MatrizArea)
-            area= np.sum(organismo.MatrizArea > 0)/(f*c)
-            rep = np.sum(organismo.MatrizArea > 1)/(f*c)
-            ratio = area*1./np.sum(organismo.MatrizArea)
+            area= 1.*np.sum(organismo.MatrizArea > 0)/(f*c)
+            rep = 1.*np.sum(organismo.MatrizArea > 1)/(f*c)
+            ratio = area/np.sum(organismo.MatrizArea)
+            rep_rec = rep*1./area
             comidosVSArea = organismo.n_explotados*1./area
             if self.ratioRepeticion is None:
                 self.ratioRepeticion = np.array(ratio)
@@ -54,22 +58,25 @@ class EstadisticaArea(Estadistica):
                 self.explotados = np.array(organismo.n_explotados)
             else:
                 self.explotados = np.hstack((self.explotados,organismo.n_explotados))
+            self.ratioRepetidoRecorrido = np.hstack((self.ratioRepetidoRecorrido, rep_rec))
+
+
 class EstadisticaAreaVariosOrganismos(Estadistica):
     def __init__(self):
         super().__init__()
 
     def inicializar_simulaciones(self, closing_time, n_simulacion):
         for organismo in self.modelo:
-            organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
             add_metodo(organismo,plot_mapa_calor)
             organismo.areaRecorrida = None #TODO hacerlo para cada organismo??? Nuestro proyecto es solo para un organismo es indiferente
             organismo.areaRep = None #TODO hacerlo para cada organismo??? 
             organismo.ratioRepeticion = None
             organismo.ratioExplotadosArea = None
-        self.areaRecorrida = None #TODO hacerlo para cada organismo??? Nuestro proyecto es solo para un organismo es indiferente
-        self.areaRep = None #TODO hacerlo para cada organismo??? 
-        self.ratioRepeticion = None
-        self.ratioExplotadosArea = None
+            organismo.ratioRepetidoRecorrido = []
+
+    def inicializar(self, closing_time, n_simulacion):
+        for organismo in self.modelo:
+            organismo.MatrizArea = self.modelo.espacio.areaMatrix(organismo.r_explotacion)
 
     def actualizar(self, t, n_simulacion):
 
@@ -84,8 +91,9 @@ class EstadisticaAreaVariosOrganismos(Estadistica):
             [f,c] = np.shape(organismo.MatrizArea)
             area= np.sum(organismo.MatrizArea > 0)/(f*c)
             rep = np.sum(organismo.MatrizArea > 1)/(f*c)
-            ratio = area*1./np.sum(organismo.MatrizArea)
-            comidosVSArea = organismo.n_explotados*1./area
+            ratio = area/np.sum(organismo.MatrizArea)
+            rep_rec = rep/area
+            comidosVSArea = organismo.n_explotados/area
             if organismo.ratioRepeticion is None:
                 organismo.ratioRepeticion = np.array(ratio)
             else:
@@ -105,6 +113,6 @@ class EstadisticaAreaVariosOrganismos(Estadistica):
                 organismo.areaRep = np.array(rep)
             else:
                 organismo.areaRep = np.hstack((organismo.areaRep,rep))
-
+            organismo.ratioRepetidoRecorrido = np.hstack((self.ratioRepetidoRecorrido, rep_rec))
 
     

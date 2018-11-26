@@ -119,4 +119,5 @@ def plot_mapa_calor(organismo, ax=None, color="YlOrBr"):
     if ax is None:
         ax = plt.gca()
 
-    ax.imshow(organismo.MatrizArea.T, cmap="YlOrBr",origin="lower")
+    ax.imshow(organismo.MatrizArea.T, cmap="YlOrBr", origin="lower", interpolation='none', extent=[*organismo.espacio.ejex, *organismo.espacio.ejey])
+

@@ -4,7 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fftpack
-import statsmodels.api as sm 
+import statsmodels.api as sm
 
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -28,27 +28,43 @@ objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
 
 # Creamos un random walker y lo añadimos al modelo
-organismo = LevyFlightActivo(1,3)
+organismo = LevyFlightActivo(r_explotacion=10, r_sensibilidad=3)
 modelo.add_organismo(organismo)
 
 
 # Especificamos que estadisticas queremos recolectar
 modelo.add_estadistica(EstadisticaArea())
 
-modelo.simular(500,500)
+modelo.simular(500, 1)
 for estadistica in modelo.estadisticas:
   plt.figure()
   plt.hist(estadistica.areaRep,density=False,bins='auto')
   plt.title('Area repetida')
   plt.figure()
   plt.hist(estadistica.areaRecorrida,density=False,bins='auto')
-  plt.title('Area')
+  plt.title('Area recorrida')
   plt.figure()
   plt.hist(estadistica.ratioRepeticion,density=False,bins='auto')
-  plt.title('Ratio')
+  plt.title('Ratio de repeticion')
   plt.figure()
   plt.hist(estadistica.ratioExplotadosArea,density=False,bins='auto')
-  plt.title('explotados')
+  plt.title('Ratio explotados/area recorrida')  
+  #plt.figure()
+  #plt.hist(estadistica.ratioRepetidoRecorrido,density=False,bins='auto')
+  #plt.title('Ratio area repetida/area recorrida')
   #plt.figure()
   #organismo.plot_mapa_calor()
   plt.show()
+
+plt.figure()
+organismo.plot_mapa_calor()
+plt.show()
+
+# Guardar datos de las simulaciones
+#np.savetxt('../datos/area_repetida.txt', estadistica.areaRep, delimiter="\t")
+#np.savetxt('../datos/area_recorrida.txt', estadistica.areaRecorrida, delimiter="\t")
+#np.savetxt('../datos/ratio_repeticion.txt', estadistica.ratioRepeticion, delimiter="\t")
+#np.savetxt('../datos/ratio_explotados_area.txt', estadistica.ratioExplotadosArea, delimiter="\t")
+#np.savetxt('../datos/ratio_repetidos_recorridos.txt', estadistica.ratioRepetidoRecorrido, delimiter="\t")
+
+

@@ -64,10 +64,6 @@ class Espacio:
     @abc.abstractmethod
     def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
         pass
-
-    @abc.abstractmethod
-    def areaMatrix(self,radio):
-        pass
     
     @abc.abstractmethod
     def getFilaColumnaAreaMatrix(self,pos):
@@ -88,6 +84,12 @@ class Espacio:
         size = self.size
         #ax.set_aspect(size[0]/size[1])
         ax.set_aspect(1.)
+
+    def areaMatrix(self,radio,valorDiscretizacion=None):
+        if valorDiscretizacion is None:
+            valorDiscretizacion = radio
+        """Da una simplificacion del espacio actual en cuadrantes"""
+        return np.zeros((int(np.ceil(self.size[1]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
 
 class EspacioToroidalFinito(Espacio):
 
@@ -162,12 +164,6 @@ class EspacioToroidalFinito(Espacio):
 
         return ax
 
-    def areaMatrix(self,radio,valorDiscretizacion=None):
-        if valorDiscretizacion is None:
-            valorDiscretizacion = radio
-        """Da una simplificacion del espacio actual en cuadrantes"""
-        return np.zeros((int(np.ceil(self.size[1]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
-    
     def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
         if valorDiscretizacion is None:
             valorDiscretizacion = radio
@@ -241,3 +237,6 @@ class EspacioFinito(Espacio):
         ax.plot(trayectoria[:,0], trayectoria[:,1], c=c)
 
         return ax
+
+    def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
+        pass
