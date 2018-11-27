@@ -6,7 +6,7 @@ from .modelo import *
 from .objetivos import *
 from .organismo import *
 
-from .EstadisticaRoberto import *
+
 from .estadisticas_temp import *
 
 

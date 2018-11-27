@@ -64,11 +64,11 @@ class Espacio:
     @abc.abstractmethod
     def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
         pass
-    
+
     @abc.abstractmethod
     def getFilaColumnaAreaMatrix(self,pos):
         pass
-    
+
     def calcular_angulo_mov(self, inicial, final):
         y = final - inicial
 
@@ -85,11 +85,20 @@ class Espacio:
         #ax.set_aspect(size[0]/size[1])
         ax.set_aspect(1.)
 
-    def areaMatrix(self,radio,valorDiscretizacion=None):
-        if valorDiscretizacion is None:
-            valorDiscretizacion = radio
-        """Da una simplificacion del espacio actual en cuadrantes"""
-        return np.zeros((int(np.ceil(self.size[1]*radio*valorDiscretizacion)), int(np.ceil(self.size[0]*radio*valorDiscretizacion))))
+    def area_matrix(self, dx=None, dy=None):
+        """ Devuelve una matriz con el espacio discretizado,
+            utilizado para las estadisticas de area"""
+
+        if dx is None:
+            dx = .1
+        if dy is None:
+            dy = .1
+
+        x,y = self.size
+
+        x, y = int(np.ceil(x/dx)), int(np.ceil(y/dy))
+
+        return np.zeros((x,y))
 
 class EspacioToroidalFinito(Espacio):
 
@@ -164,12 +173,51 @@ class EspacioToroidalFinito(Espacio):
 
         return ax
 
+    def actualizar_matriz(self, posicion, radio, matriz):
+        """ Actualiza la matriz en las estadisticas de area
+
+            posicion: Posicion en el espacio del organismo
+            radio: Radio del area a sumar
+            matriz: Matriz de area del organismo
+        """
+        # Tam del espacio
+        sx, sy = self.size
+
+        # Tam de discretizacion de cada eje
+        dx, dy =  sx / matriz.shape[0], sy / matriz.shape[1]
+
+        # Coordenadas iniciales en la matriz de area
+        pos_x =  int((posicion[0]- self.ejex[0])/dx)
+        pos_y = int((posicion[1]- self.ejey[0])/dy)
+
+        rx = int(np.ceil(radio / dx))
+        ry = int(np.ceil(radio / dy))
+
+        # Tenemos en cuenta las coordenadas equivalentes
+
+        clase_x = (0, matriz.shape[0], -matriz.shape[0])
+        clase_y = (0, matriz.shape[1], -matriz.shape[1])
+
+        for sx, sy in itertools.product(clase_x, clase_y):
+            # Calculamos fronteras del rectangulo
+            lx0 = max((pos_x - rx) + sx, 0)
+            lx1 = min((pos_x + rx) + sx, matriz.shape[0])
+
+            ly0 = max((pos_y - ry) + sy, 0)
+            ly1 = min((pos_y + ry) + sy, matriz.shape[1])
+
+            # sumamos peso
+            if lx0 < lx1 and ly0 < ly1:
+                matriz[lx0:lx1, ly0:ly1] += 1
+
+
+
     def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
         if valorDiscretizacion is None:
             valorDiscretizacion = radio
         pos_actual = (pos*radio*valorDiscretizacion).astype(int)
         pos_0 =(pos_actual -1*radio*valorDiscretizacion).astype(int)
-        
+
         pos_1 =(pos_actual +radio*valorDiscretizacion).astype(int)
 
 
@@ -183,7 +231,7 @@ class EspacioToroidalFinito(Espacio):
         ejex = np.array(pos_actual[0])
         ejey = np.array(pos_actual[1])
         if pos_0[0]<0:
-            ejex = np.append(ejex,*[range(0,pos_actual[0]+1)]) 
+            ejex = np.append(ejex,*[range(0,pos_actual[0]+1)])
             ejex = np.append(ejex,*[range(pos_0[0]+c,c)])
         else:
             ejex = np.append(ejex,*[range(pos_0[0],pos_actual[0])])
@@ -195,13 +243,13 @@ class EspacioToroidalFinito(Espacio):
             ejey = np.append(ejey,*[range(pos_0[1],pos_actual[1])])
 
         if pos_1[0] >=c:
-            ejex = np.append(ejex,*[range(pos_actual[0],c)]) 
+            ejex = np.append(ejex,*[range(pos_actual[0],c)])
             ejex = np.append(ejex,*[range(0,pos_1[0]-c+1)])
         else:
             ejex = np.append(ejex,*[range(pos_actual[0],pos_1[0])])
 
         if pos_1[1] >= f:
-            ejey = np.append(ejey,*[range(pos_actual[1],f)]) 
+            ejey = np.append(ejey,*[range(pos_actual[1],f)])
             ejey = np.append(ejey,*[range(0,pos_1[1]-f+1)])
         else:
             ejey = np.append(ejey,*[range(pos_actual[1],pos_1[1])])
@@ -227,6 +275,37 @@ class EspacioFinito(Espacio):
 
         return np.array((x,y))
 
+    def actualizar_matriz(self, posicion, radio, matriz):
+        """ Actualiza la matriz en las estadisticas de area
+
+            posicion: Posicion en el espacio del organismo
+            radio: Radio del area a sumar
+            matriz: Matriz de area del organismo
+        """
+        # Tam del espacio
+        sx, sy = self.size
+
+        # Tam de discretizacion de cada eje
+        dx, dy =  sx / matriz.shape[0], sy / matriz.shape[1]
+
+        # Coordenadas iniciales en la matriz de area
+        pos_x =  int((posicion[0]- self.ejex[0])/dx)
+        pos_y = int((posicion[1]- self.ejey[0])/dy)
+
+        rx = int(np.ceil(radio / dx))
+        ry = int(np.ceil(radio / dy))
+
+        # Calculamos fronteras del rectangulo
+        lx0 = max((pos_x - rx), 0)
+        lx1 = min((pos_x + rx), matriz.shape[0])
+
+        ly0 = max((pos_y - ry), 0)
+        ly1 = min((pos_y + ry), matriz.shape[1])
+
+        # sumamos peso
+        matriz[lx0:lx1, ly0:ly1] += 1
+
+
     def plot_trayectoria(self, trayectoria, trayectoria_real, ax=None, c=None):
         """Dibuja una trayectoria en el espacio"""
 
@@ -237,6 +316,3 @@ class EspacioFinito(Espacio):
         ax.plot(trayectoria[:,0], trayectoria[:,1], c=c)
 
         return ax
-
-    def getFilaColumnaAreaMatrix(self,pos,radio,shape,valorDiscretizacion=None):
-        pass
