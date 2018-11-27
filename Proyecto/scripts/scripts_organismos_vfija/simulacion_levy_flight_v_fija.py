@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(script_path)
-sys.path.append("../")
+sys.path.append("../../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
 from simulador import Trayectoria, Explotados
-from simulador import LevyFlight
+from simulador import LevyFlightVFija
 
 
 # Configuracion del espacio
@@ -27,7 +27,7 @@ maximo = np.inf # Maxima distancia en un salto
 minimo = 0 # Minima distancia en un salto
 loc = 0
 scale = 1.
-inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
+inicial = (size[0]/2,size[1]/2) # Coordenadas iniciales (None para aleatorias)
 
 # Configuracion Plot
 plt.style.use("seaborn")
@@ -38,7 +38,7 @@ objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
 
 # Creamos un random walker y lo añadimos al modelo
-organismo = LevyFlight(r, a, b, loc, scale, maximo, minimo, posicion=inicial)
+organismo = LevyFlightVFija(r, 1., a, b, loc, scale, maximo, minimo, posicion=inicial)
 modelo.add_organismo(organismo)
 
 # Especificamos que estadisticas queremos recolectar
@@ -52,5 +52,7 @@ organismo.plot_area_explotada()
 modelo.plot()
 organismo.plot_trayectoria()
 organismo.plot_explotados()
+
+print("espacio recorrido", organismo.espacio_recorrido)
 
 plt.show()

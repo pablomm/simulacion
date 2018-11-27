@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 # Nos movemos al fichero del script para evitar problemas
 script_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(script_path)
-sys.path.append("../")
-
+sys.path.append("../../")
 
 
 from simulador import (ObjetivosUniformes, EspacioToroidalFinito, Modelo,

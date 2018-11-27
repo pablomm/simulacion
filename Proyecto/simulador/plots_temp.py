@@ -12,6 +12,8 @@ def plot_distancias(organismo, ax=None, param=None, plot_ci=True):
 
     times = range(len(organismo.medias_distancias))
     ax.plot(times, organismo.medias_distancias, label=param)
+    ax.set_xlabel("Unidades de tiempo")
+    ax.set_ylabel("Distancia recorrida")
     if plot_ci:
         y1 = organismo.medias_distancias + organismo.std_distancias
         y2 = organismo.medias_distancias - organismo.std_distancias
@@ -32,6 +34,8 @@ def plot_numero_explotados(organismo, modelo, ax=None, param=None, plot_ci=True)
 
     times = range(len(organismo.medias_explotados))
     ax.plot(times, organismo.medias_explotados, label=param)
+    ax.set_xlabel("Unidades de tiempo")
+    ax.set_ylabel("Numero de objetivos explotados")
     if plot_ci:
         y1 = organismo.medias_explotados + organismo.std_explotados
         y2 = organismo.medias_explotados - organismo.std_explotados
