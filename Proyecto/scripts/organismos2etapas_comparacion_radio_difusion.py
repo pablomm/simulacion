@@ -16,9 +16,10 @@ sys.path.append("../")
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
 from simulador import TargetEspacioOrganismo, VariacionParametroBloques
 from simulador import RandomWalkerActivo, LevyFlightActivo, Organismo2Etapas
-from simulador import Explotados, Distancias, Trayectoria
+from simulador import RadioDifusion
 
-n_simulaciones = 100
+n_simulaciones = 1
+n_variaciones = 2
 n_organismos = 3 #Los que comparamos
 
 # Configuracion del espacio
@@ -31,8 +32,10 @@ v = 1. # Velocidad del organismo
 # Organismo RandomWalker
 mu = 0. #Media del movimiento browniano
 std = 1.5 # Desviacion estandar del movimiento browniano
-t = 2000 # Tiempo a simular
-inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
+
+tiempo_maximo = 2000
+tiempos = np.linspace(1,tiempo_maximo, n_variaciones) # Tiempo a simular
+inicial = (size[0]/2,size[1]/2) # Coordenadas iniciales (None para aleatorias)
 # Organismo LevyFlight
 a = 1.5 # alpha de distribucion de levy
 b = 1. # beta de distribucion de levy
@@ -45,59 +48,64 @@ scale = 1.
 plt.style.use("seaborn")
 
 #Plots
-fig, distancias = plt.subplots(1, 1)
-distancias.set_title("Distancia recorrida frente al tiempo transcurrido")
-distancias.set_prop_cycle(color=plt.cm.gist_heat(np.linspace(0,0.5, n_organismos)))
-
-fig, explotados = plt.subplots(1, 1)
-explotados.set_title("Numero de objetivos explotados frente al tiempo (r={}, R={})".format(r, R))
-explotados.set_prop_cycle(color=plt.cm.gist_heat(np.linspace(0,0.5, n_organismos)))
+fig, ax = plt.subplots(1, 1)
+ax.set_title("Radio difusion")
+ax.set_prop_cycle(color=plt.cm.gist_heat(np.linspace(0,0.5, n_organismos)))
 
 espacio = EspacioToroidalFinito(*size)
 
 # RandomWalker Activo
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(Explotados())
-modelo.add_estadistica(Distancias())
-modelo.add_estadistica(Trayectoria())
+modelo.add_estadistica(RadioDifusion())
+estadistica = VariacionParametroBloques("radio_difusion", tiempos)
+modelo.add_estadistica(estadistica)
 organismo = RandomWalkerActivo(r_explotacion=r, r_sensibilidad=R, velocidad=v,
                              std=std, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
-modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 
-organismo.plot_distancias(ax=distancias, param ="random_walker_activo")
-organismo.plot_numero_explotados(modelo, ax=explotados, param="random_walker_activo")
+for t in tiempos:
+    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
+
+estadistica.plot_medias(ax=ax)
 
 #LevyFlight Activo
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(Explotados())
-modelo.add_estadistica(Distancias())
-modelo.add_estadistica(Trayectoria())
+modelo.add_estadistica(RadioDifusion())
+estadistica = VariacionParametroBloques("radio_difusion", tiempos)
+modelo.add_estadistica(estadistica)
 organismo = LevyFlightActivo(r_explotacion=r, r_sensibilidad=R, velocidad=v,
                              a=a, b=b, loc=loc, scale=scale, maximo=maximo,
                              minimo=minimo, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
-modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 
-organismo.plot_distancias(ax=distancias, param ="levy_flight_activo")
-organismo.plot_numero_explotados(modelo, ax=explotados, param="levy_flight_activo")
+for t in tiempos:
+    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
+
+estadistica.plot_medias(ax=ax)
+
 
 #Organismo2Etapas (random walker + levy flight pasivo)
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(Explotados())
-modelo.add_estadistica(Distancias())
-modelo.add_estadistica(Trayectoria())
+modelo.add_estadistica(RadioDifusion())
+estadistica = VariacionParametroBloques("radio_difusion", tiempos)
+modelo.add_estadistica(estadistica)
 organismo = Organismo2Etapas(r_explotacion=r, r_sensibilidad=R, velocidad=v, 
                              mu=mu, std=std, a=a, b=b, loc=loc, scale=scale, 
                              maximo=maximo, minimo=minimo, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
-modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 
-organismo.plot_distancias(ax=distancias, param ="organismo_2_etapas")
-organismo.plot_numero_explotados(modelo, ax=explotados, param="organismo_2_etapas")
+for t in tiempos:
+    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
+
+estadistica.plot_medias(ax=ax)
+x = np.linspace(1,tiempo_maximo,100)
+c = estadistica.medias[-1]/np.sqrt(tiempo_maximo)
+plt.plot(x,c*np.sqrt(x), color="red", linestyle="dashed")
+
+plt.legend(['random_walker_activo', 'levy_activo', 'organismo_2_etapas'])
 
 plt.show()
 
