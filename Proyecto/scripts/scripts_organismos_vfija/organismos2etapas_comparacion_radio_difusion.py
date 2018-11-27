@@ -14,16 +14,14 @@ os.chdir(script_path)
 sys.path.append("../../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import TargetEspacioOrganismo, VariacionParametroBloques
 from simulador import RandomWalkerActivo, LevyFlightActivo, Organismo2Etapas
-from simulador import RadioDifusion
+from simulador import RadioDifusionTiempo
 
 n_simulaciones = 50
-n_variaciones = 10
 n_organismos = 3 #Los que comparamos
 
 # Configuracion del espacio
-n_objetivos = 1000 # Numero de objetivos
+n_objetivos = 10000 # Numero de objetivos
 # Configuracion del espacio
 size = (1000.,1000.) # Dimensiones del espacio
 r = 1 # Radio de explotacion
@@ -33,8 +31,9 @@ v = 1. # Velocidad del organismo
 mu = 0. #Media del movimiento browniano
 std = 1.5 # Desviacion estandar del movimiento browniano
 
-tiempo_maximo = 2000
-tiempos = np.linspace(1,tiempo_maximo, n_variaciones) # Tiempo a simular
+densidad = n_objetivos/(size[0]*size[1])
+
+t = 2000
 inicial = (size[0]/2,size[1]/2) # Coordenadas iniciales (None para aleatorias)
 # Organismo LevyFlight
 a = 1.5 # alpha de distribucion de levy
@@ -49,66 +48,50 @@ plt.style.use("seaborn")
 
 #Plots
 fig, ax = plt.subplots(1, 1)
-ax.set_title("Radio difusion (r={}, R={})".format(r, R))
+ax.set_title("Radio difusion (r={}, R={}, densidad={}obj/u^2)".format(r, R, densidad))
 ax.set_prop_cycle(color=plt.cm.gist_heat(np.linspace(0,0.5, n_organismos)))
-ax.set_xlabel("Tiempo")
-ax.set_ylabel("Radio de difusion")
 
 espacio = EspacioToroidalFinito(*size)
 
 # RandomWalker Activo
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(RadioDifusion())
-estadistica = VariacionParametroBloques("radio_difusion", tiempos)
-modelo.add_estadistica(estadistica)
+modelo.add_estadistica(RadioDifusionTiempo())
 organismo = RandomWalkerActivo(r_explotacion=r, r_sensibilidad=R, velocidad=v,
                              std=std, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
 
-
-for t in tiempos:
-    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
-
-estadistica.plot_medias(ax=ax)
+modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
+organismo.plot_radio_difusion_tiempo(param="random_walker_activo")
 
 #LevyFlight Activo
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(RadioDifusion())
-estadistica = VariacionParametroBloques("radio_difusion", tiempos)
-modelo.add_estadistica(estadistica)
+modelo.add_estadistica(RadioDifusionTiempo())
 organismo = LevyFlightActivo(r_explotacion=r, r_sensibilidad=R, velocidad=v,
                              a=a, b=b, loc=loc, scale=scale, maximo=maximo,
                              minimo=minimo, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
 
-for t in tiempos:
-    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
-
-estadistica.plot_medias(ax=ax)
+modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
+organismo.plot_radio_difusion_tiempo(param="levy_flight_activo")
 
 
 #Organismo2Etapas (random walker + levy flight pasivo)
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
-modelo.add_estadistica(RadioDifusion())
-estadistica = VariacionParametroBloques("radio_difusion", tiempos)
-modelo.add_estadistica(estadistica)
+modelo.add_estadistica(RadioDifusionTiempo())
 organismo = Organismo2Etapas(r_explotacion=r, r_sensibilidad=R, velocidad=v, 
                              mu=mu, std=std, a=a, b=b, loc=loc, scale=scale, 
                              maximo=maximo, minimo=minimo, stop_eat=False, posicion=inicial)
 modelo.add_organismo(organismo)
 
-for t in tiempos:
-    modelo.simular(int(t), n_simulaciones=n_simulaciones, stop_empty=False, verbose=2)
+modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
+organismo.plot_radio_difusion_tiempo(param="organismo_2_etapas")
 
-estadistica.plot_medias(ax=ax)
-#x = np.linspace(1,tiempo_maximo,100)
-#c = estadistica.medias[-1]/np.sqrt(tiempo_maximo)
+#x = np.linspace(1,t,100)
+#c = organismo.medias_radio[-1]/np.sqrt(t)
 #plt.plot(x,c*np.sqrt(x), color="red", linestyle="dashed")
-
-plt.legend(['random_walker_activo', 'levy_activo', 'organismo_2_etapas'])
 
 plt.show()
 
