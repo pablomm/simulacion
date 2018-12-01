@@ -65,3 +65,23 @@ def plot_radio_difusion_tiempo(organismo, ax=None, param=None, plot_ci=True):
     if param:
         ax.legend()
     return ax
+
+### Graficas de medias a lo largo del tiempo
+def plot_medias_tiempo(organismo, ax=None, param=None, plot_ci=True, **kwargs):
+    
+    if ax is None:
+        ax = plt.gca()
+    
+    times = range(len(organismo.medias))
+    ax.plot(times, organismo.medias, label=param)
+    ax.set_xlabel("Unidades de tiempo")
+    #ax.set_ylabel("Medias")
+    if plot_ci:
+        y1 = organismo.medias + organismo.std
+        y2 = organismo.medias - organismo.std
+        ax.fill_between(times, y1, y2, where=y1>=y2, alpha=0.3)
+        #ax.plot(times, y1, linestyle="dashed", color="red", linewidth=0.5)
+        #ax.plot(times, y2, linestyle="dashed", color="red", linewidth=0.5)
+    if param:
+            ax.legend()
+    return ax

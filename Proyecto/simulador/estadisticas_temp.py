@@ -47,12 +47,14 @@ class RadioDifusionTiempo(Estadistica):
     """
 
     def inicializar_simulaciones(self, numero_simulaciones, closing_time):
+        
         for organismo in self.modelo:
             organismo.medias_radio = np.zeros(closing_time)
             organismo.std_radio = np.zeros(closing_time)
             add_metodo(organismo, plot_radio_difusion_tiempo)
 
     def inicializar(self, closing_time, n_simulacion):
+        
         for organismo in self.modelo:
             organismo.radio_difusion = np.zeros(closing_time)
 
@@ -76,3 +78,47 @@ class RadioDifusionTiempo(Estadistica):
             organismo.std_radio -= organismo.medias_radio**2
             organismo.std_radio = np.sqrt(organismo.std_radio)
 
+class EstadisticaTiempo(Estadistica):
+    """Estadistica para calcular a lo largo del tiempo la media y la desviacion
+        estandar de un parametro.
+        """
+    
+    def __init__(self, name):
+        """
+            name: Nombre del parametro
+            parametros: Lista con las variaciones del parametro del plot
+            n_organismo: Numero de organismos que habra en el sistema
+            
+            """
+        self.name = name
+    
+    def inicializar_simulaciones(self, numero_simulaciones, closing_time):
+
+        for organismo in self.modelo:
+            organismo.medias = np.zeros(closing_time)
+            organismo.std = np.zeros(closing_time)
+            add_metodo(organismo, plot_medias_tiempo)
+
+    def inicializar(self, closing_time, n_simulacion):
+
+        for organismo in self.modelo:
+            organismo.parametro = np.zeros(closing_time)
+
+    def actualizar(self, t, n_simulacion):
+        
+        for organismo in self.modelo:
+            organismo.parametro[t] = getattr(organismo, self.name)
+
+    def finalizar(self, t, n_simulacion):
+        
+        for organismo in self.modelo:
+            organismo.medias += organismo.parametro
+            organismo.std += organismo.parametro**2
+
+    def finalizar_bloque(self):
+        
+        for organismo in self.modelo:
+            organismo.medias /= self.modelo.n_simulaciones
+            organismo.std /= self.modelo.n_simulaciones
+            organismo.std -= organismo.medias**2
+            organismo.std = np.sqrt(organismo.std)

@@ -82,8 +82,6 @@ def plot_histograma(estadistica, ax=None, **kwargs):
 
     return ax
 
-### Grafica para estadistica
-
 ### Graficasde la estadistica Recorrido Targets Multiple
 def plot_medias(estadistica, ax=None, **kwargs):
 
