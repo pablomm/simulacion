@@ -19,14 +19,14 @@ from simulador import TiempoEnExplotar
 
 n_simulaciones = 50
 n_organismos = 3 #Los que comparamos
-n_dist = 50
+n_variaciones = 50
 
 # Configuracion de los objetivos
 n_puntos_grupo = 1
 n_grupos = 1
 std_grupos = 0. # Desviacion estandar de los grupos
-distancia = np.linspace(1,50,n_dist)
-          
+distancia = np.linspace(0, 50, n_variaciones)
+
 # Configuracion del espacio
 size = (100.,100.) # Dimensiones del espacio
 r = 1 # Radio de explotacion
@@ -55,11 +55,14 @@ ax.set_title("Tiempo en explotar frente a la distancia inicial a la presa (r={},
 
 espacio = EspacioToroidalFinito(*size)
 
-rw = []
-lf = []
-o2e = []
+rw = np.empty(n_variaciones)
+lf = np.empty(n_variaciones)
+o2e = np.empty(n_variaciones)
+rw_std = np.empty(n_variaciones)
+lf_std = np.empty(n_variaciones)
+o2e_std = np.empty(n_variaciones)
 
-for d in distancia:
+for i, d in enumerate(distancia):
     grupos = [[50, 50+d]]
     # RandomWalker Activo
     objetivos = ObjetivosAgrupados(n_puntos_grupo, espacio, n_grupos,
@@ -71,7 +74,8 @@ for d in distancia:
     modelo.add_organismo(organismo)
 
     modelo.simular(t, n_simulaciones, stop_empty=True, verbose=1)
-    rw.append( organismo.medias_tiempo_explotar )
+    rw[i] = organismo.medias_tiempo_explotar
+    rw_std[i] = organismo.std_tiempo_explotar
 
     #LevyFlight Activo
     objetivos = ObjetivosAgrupados(n_puntos_grupo, espacio, n_grupos,
@@ -84,7 +88,8 @@ for d in distancia:
     modelo.add_organismo(organismo)
 
     modelo.simular(t, n_simulaciones, stop_empty=True, verbose=1)
-    lf.append( organismo.medias_tiempo_explotar )
+    lf[i] = organismo.medias_tiempo_explotar
+    lf_std[i] = organismo.std_tiempo_explotar
 
     #Organismo2Etapas (random walker + levy flight pasivo)
     objetivos = ObjetivosAgrupados(n_puntos_grupo, espacio, n_grupos,
@@ -97,11 +102,22 @@ for d in distancia:
     modelo.add_organismo(organismo)
 
     modelo.simular(t, n_simulaciones, stop_empty=True, verbose=1)
-    o2e.append( organismo.medias_tiempo_explotar )
+    o2e[i] = organismo.medias_tiempo_explotar
+    o2e_std[i] = organismo.std_tiempo_explotar
 
+#Plot
 ax.plot(distancia, rw, label="random_walker_activo", color="black")
+y1 = rw + rw_std
+y2 = rw - rw_std
+ax.fill_between(distancia, y1, y2, where=y1>=y2, alpha=0.3, color="black")
 ax.plot(distancia, lf, label="levy_flight_activo", color="brown")
+y1 = lf + lf_std
+y2 = lf - lf_std
+ax.fill_between(distancia, y1, y2, where=y1>=y2, alpha=0.3, color="brown")
 ax.plot(distancia, o2e, label="organismo_2_etapas", color="red")
+y1 = o2e + o2e_std
+y2 = o2e - o2e_std
+ax.fill_between(distancia, y1, y2, where=y1>=y2, alpha=0.3, color="red")
 
 plt.legend()
 plt.show()

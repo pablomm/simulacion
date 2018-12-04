@@ -203,3 +203,4 @@ class TiempoEnExplotar(Estadistica):
     
         for organismo in self.modelo:
             organismo.medias_tiempo_explotar = np.mean(organismo.tiempos_explotar)
+            organismo.std_tiempo_explotar = np.std(organismo.tiempos_explotar)
