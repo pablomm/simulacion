@@ -30,7 +30,7 @@ R = 3 # Radio de sensibilidad
 v = 1. # Velocidad del organismo
 # Organismo RandomWalker
 mu = 0. #Media del movimiento browniano
-std = 1.5 # Desviacion estandar del movimiento browniano
+std = 1. # Desviacion estandar del movimiento browniano
 t = 2000 # Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
 # Organismo LevyFlight

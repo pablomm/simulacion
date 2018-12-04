@@ -72,13 +72,13 @@ def plot_medias_tiempo(organismo, ax=None, param=None, plot_ci=True, **kwargs):
     if ax is None:
         ax = plt.gca()
     
-    times = range(len(organismo.medias))
-    ax.plot(times, organismo.medias, label=param)
+    times = range(len(organismo.medias_param))
+    ax.plot(times, organismo.medias_param, label=param)
     ax.set_xlabel("Unidades de tiempo")
     #ax.set_ylabel("Medias")
     if plot_ci:
-        y1 = organismo.medias + organismo.std
-        y2 = organismo.medias - organismo.std
+        y1 = organismo.medias_param + organismo.stds_param
+        y2 = organismo.medias_param - organismo.stds_param
         ax.fill_between(times, y1, y2, where=y1>=y2, alpha=0.3)
         #ax.plot(times, y1, linestyle="dashed", color="red", linewidth=0.5)
         #ax.plot(times, y2, linestyle="dashed", color="red", linewidth=0.5)

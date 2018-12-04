@@ -95,8 +95,8 @@ class EstadisticaTiempo(Estadistica):
     def inicializar_simulaciones(self, numero_simulaciones, closing_time):
 
         for organismo in self.modelo:
-            organismo.medias = np.zeros(closing_time)
-            organismo.std = np.zeros(closing_time)
+            organismo.medias_param = np.zeros(closing_time)
+            organismo.stds_param = np.zeros(closing_time)
             add_metodo(organismo, plot_medias_tiempo)
 
     def inicializar(self, closing_time, n_simulacion):
@@ -112,13 +112,73 @@ class EstadisticaTiempo(Estadistica):
     def finalizar(self, t, n_simulacion):
         
         for organismo in self.modelo:
-            organismo.medias += organismo.parametro
-            organismo.std += organismo.parametro**2
+            organismo.medias_param += organismo.parametro
+            organismo.stds_param += organismo.parametro**2
 
     def finalizar_bloque(self):
         
         for organismo in self.modelo:
-            organismo.medias /= self.modelo.n_simulaciones
-            organismo.std /= self.modelo.n_simulaciones
-            organismo.std -= organismo.medias**2
-            organismo.std = np.sqrt(organismo.std)
+            organismo.medias_param /= self.modelo.n_simulaciones
+            organismo.stds_param /= self.modelo.n_simulaciones
+            organismo.stds_param -= organismo.medias_param**2
+            organismo.stds_param = np.sqrt(organismo.stds_param)
+
+class EstadisticaAreaTemp(Estadistica):
+    def __init__(self, dx=None, dy=None, r=None):
+        """ Estadistica para calcular la matriz de areas.
+            
+            dx: Tamaño de discretizacion la malla en el eje x. Por defecto 0.1
+            dy: Tamaño de discreatizacion en el eje y. Por defecto 0.1
+            r: Radio del area a contar en cada paso.
+            """
+        super().__init__()
+        
+        self.dx = dx
+        self.dy = dy
+        self.radio_area = r
+    
+    def inicializar_simulaciones(self, n_simulacion, closing_time):
+        """ Inicializa el organismo antes de las simulaciones"""
+        
+        for organismo in self.modelo:
+            add_metodo(organismo, plot_mapa_calor)
+            
+            # Guardamos el radio con el que estamos mirando el area
+            if self.radio_area is None:
+                organismo.radio_area  = organismo.r_explotacion
+            else:
+                organismo.radio_area = self.radio_area
+
+
+    def inicializar(self, closing_time, n_simulacion):
+        """ Inicializa el organismo antes de cada simulacion """
+        for organismo in self.modelo:
+            # Crea la matriz de discretizacion del espacio
+            organismo.MatrizArea = self.modelo.espacio.area_matrix(dx=self.dx,
+                                                                   dy=self.dy)
+                
+    def actualizar(self, t, n_simulacion):
+        
+        # En cada paso actualiza la matriz de area
+        for organismo in self.modelo:
+            self.modelo.espacio.actualizar_matriz(organismo.posicion,
+                                  organismo.radio_area,
+                                  organismo.MatrizArea)
+            f, c = organismo.MatrizArea.shape
+            tam_malla = f*c
+            area= np.sum(organismo.MatrizArea > 0)/tam_malla
+            organismo.ratioExplotadosArea = organismo.n_explotados/area
+            rep = np.sum(organismo.MatrizArea > 2)/tam_malla
+            
+            organismo.areaRecorrida = area
+            organismo.areaRep = rep
+            
+            # Ratio area entre area recorrida ponderando repeticion
+            organismo.ratioRepeticion = area/np.sum(organismo.MatrizArea)
+            # Comido/Area explorada
+            organismo.ratioExplotadosArea = organismo.n_explotados/area
+            
+            organismo.ratioRepetidoRecorrido = rep/area
+    
+    def finalizar(self, t, s):
+        pass
