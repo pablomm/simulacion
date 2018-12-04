@@ -25,7 +25,7 @@ n_objetivos = 10000 # Numero de objetivos
 # Configuracion del espacio
 size = (1000.,1000.) # Dimensiones del espacio
 r = 1 # Radio de explotacion
-R = 4 # Radio de sensibilidad
+R = 3 # Radio de sensibilidad
 v = 1. # Velocidad del organismo
 # Organismo RandomWalker
 mu = 0. #Media del movimiento browniano

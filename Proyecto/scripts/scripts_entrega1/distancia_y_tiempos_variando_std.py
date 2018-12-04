@@ -14,7 +14,7 @@ os.chdir(script_path)
 sys.path.append("../../")
 
 from simulador import ObjetivosUniformes, EspacioToroidalFinito, Modelo
-from simulador import TargetEspacioOrganismo, VariacionParametroBloques
+from simulador import TargetEspacioOrganismo
 from simulador import RandomWalker, LevyFlight
 from simulador import Explotados, Distancias
 

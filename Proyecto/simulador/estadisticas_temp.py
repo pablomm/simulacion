@@ -182,3 +182,24 @@ class EstadisticaAreaTemp(Estadistica):
     
     def finalizar(self, t, s):
         pass
+
+class TiempoEnExplotar(Estadistica):
+    def __init__(self, dx=None, dy=None, r=None):
+        
+        super().__init__()
+    
+    def inicializar_simulaciones(self, n_simulacion, closing_time):
+        """ Inicializa el organismo antes de las simulaciones"""
+        
+        for organismo in self.modelo:
+            organismo.medias_tiempo_explotar = 0
+            organismo.tiempos_explotar = np.zeros(n_simulacion)
+    
+    def finalizar(self, t, s):
+        for organismo in self.modelo:
+            organismo.tiempos_explotar[s] = t
+
+    def finalizar_bloque(self):
+    
+        for organismo in self.modelo:
+            organismo.medias_tiempo_explotar = np.mean(organismo.tiempos_explotar)
