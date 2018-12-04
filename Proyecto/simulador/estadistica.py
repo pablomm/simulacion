@@ -315,3 +315,39 @@ class EstadisticaArea(Estadistica):
             organismo.ratioExplotadosArea[s] = organismo.n_explotados/area
 
             organismo.ratioRepetidoRecorrido[s] = rep/area
+
+
+class DiferenciasTiempos(Estadistica):
+    """Clase para recolectar la diferencias de tiempos entre objetivos
+    explotados.
+    """
+
+    def __init__(self):
+        self.diferencias_tiempos = np.array([])
+        super().__init__()
+
+    def inicializar(self, closing_time, n_simulacion):
+
+        # Añade las variables donde guardara las trayectorias
+        # Y las inicializa con la posicion inicial
+        for organismo in self.modelo:
+            organismo._tiempos_comidos = 0
+            n_inicial = organismo.objetivos.numero_objetivos_inicial
+            organismo.diferencias_tiempos = np.zeros(shape=n_inicial+1)
+
+    def actualizar(self, t, n_simulacion):
+
+        for organismo in self.modelo:
+            if len (organismo.explotados_step) > 0:
+                organismo.diferencias_tiempos[organismo._tiempos_comidos+1] = t
+                organismo._tiempos_comidos += 1
+
+    def finalizar(self, t, s):
+        """ Al final de cada simulacion calcula las diferencias de tiempo"""
+        for organismo in self.modelo:
+            if organismo._tiempos_comidos == 0:
+                organismo.diferencias_tiempos = np.array([])
+            else:
+                diffs = np.diff(organismo.diferencias_tiempos[:(organismo._tiempos_comidos+2)])[:-1]
+                organismo.diferencias_tiempos = diffs
+                self.diferencias_tiempos = np.hstack((self.diferencias_tiempos, diffs))
