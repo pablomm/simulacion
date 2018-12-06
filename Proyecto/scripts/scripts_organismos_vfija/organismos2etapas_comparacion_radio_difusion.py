@@ -25,11 +25,11 @@ n_objetivos = 10000 # Numero de objetivos
 # Configuracion del espacio
 size = (1000.,1000.) # Dimensiones del espacio
 r = 1 # Radio de explotacion
-R = 3 # Radio de sensibilidad
+R = 10 # Radio de sensibilidad
 v = 1. # Velocidad del organismo
 # Organismo RandomWalker
 mu = 0. #Media del movimiento browniano
-std = 1.5 # Desviacion estandar del movimiento browniano
+std = 1. # Desviacion estandar del movimiento browniano
 
 densidad = n_objetivos/(size[0]*size[1])
 
@@ -45,6 +45,7 @@ scale = 1.
 
 # Configuracion Plot
 plt.style.use("seaborn")
+x = np.linspace(1, t, 500)
 
 #Plots
 fig, ax = plt.subplots(1, 1)
@@ -64,6 +65,9 @@ modelo.add_organismo(organismo)
 modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 organismo.plot_radio_difusion_tiempo(param="random_walker_activo")
 
+c = organismo.medias_radio[-1]/np.sqrt(t)
+ax.plot(x,c*np.sqrt(x), color="yellow", linestyle="dashed")
+
 #LevyFlight Activo
 objetivos = ObjetivosUniformes(n_objetivos, espacio)
 modelo = Modelo(espacio, objetivos)
@@ -75,6 +79,9 @@ modelo.add_organismo(organismo)
 
 modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 organismo.plot_radio_difusion_tiempo(param="levy_flight_activo")
+
+c = organismo.medias_radio[-1]/np.sqrt(t)
+ax.plot(x,c*np.sqrt(x), color="green", linestyle="dashed")
 
 
 #Organismo2Etapas (random walker + levy flight pasivo)
@@ -89,9 +96,8 @@ modelo.add_organismo(organismo)
 modelo.simular(t, n_simulaciones, stop_empty=False, verbose=1)
 organismo.plot_radio_difusion_tiempo(param="organismo_2_etapas")
 
-#x = np.linspace(1,t,100)
-#c = organismo.medias_radio[-1]/np.sqrt(t)
-#plt.plot(x,c*np.sqrt(x), color="red", linestyle="dashed")
+c = organismo.medias_radio[-1]/np.sqrt(t)
+ax.plot(x,c*np.sqrt(x), color="blue", linestyle="dashed")
 
 plt.show()
 

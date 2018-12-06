@@ -17,9 +17,9 @@ from simulador import ObjetivosAgrupados, EspacioToroidalFinito, Modelo
 from simulador import RandomWalkerActivo, LevyFlightActivo, Organismo2Etapas
 from simulador import TiempoEnExplotar
 
-n_simulaciones = 50
+n_simulaciones = 25
 n_organismos = 3 #Los que comparamos
-n_variaciones = 50
+n_variaciones = 16
 
 # Configuracion de los objetivos
 n_puntos_grupo = 1
@@ -63,6 +63,7 @@ lf_std = np.empty(n_variaciones)
 o2e_std = np.empty(n_variaciones)
 
 for i, d in enumerate(distancia):
+    print ("\nIteracion {}".format(i))
     grupos = [[50, 50+d]]
     # RandomWalker Activo
     objetivos = ObjetivosAgrupados(n_puntos_grupo, espacio, n_grupos,
