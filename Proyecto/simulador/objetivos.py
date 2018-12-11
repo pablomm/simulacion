@@ -444,3 +444,136 @@ class ObjetivosAgrupadosRegenerables(ObjetivosRegenerables):
                 ax.add_artist(p)
         
         return ax
+
+
+class ObjetivosDiTuComo(ObjetivosDesechables):
+    """Clase para generar objetivos desechables distribuidos en el espacio
+        en nucleos o uniformemente o nada en cuadrantes.
+
+        Para inicializar:
+            numero_objetivos: Numero de objetivos a crear, array con n divisiones que se usaran para dividir el espacio
+                n par para esta primera instancia
+            espacio: Instancia de un espacio.
+            division: array con 0,1,2,-1 
+                0 ningun objetivo en esa zona
+                1 uniformemente
+                2 nucleos
+                -1 mixto
+            numero_grupos: Numero de grupos array n dimensional 
+            usos: Numero de usos que tendra cada objetivo, por defecto 1.
+            std: Desviacion estandar de los grupos mismo para todos
+    """
+
+    color_grupos = "skyblue"
+    opacidad_grupos = .35
+
+    def __init__(self, numero_objetivos, espacio, division, numero_grupos=None, std=1.,
+                 usos=1):
+        self.numero_objetivos_actual = np.array(numero_objetivos,copy=True)
+        if numero_grupos is None:
+            self.numero_grupos = np.ones(len(numero_objetivos),dtype=int)
+        else:
+            self.numero_grupos= np.copy(numero_grupos)
+        self.std_grupos = std
+        self.division = np.copy(division)
+
+        self.grupos = None
+
+        super().__init__(np.sum(numero_objetivos), espacio, usos)
+
+    def inicializar_objetivos(self, numero_objetivos):
+        """Inicializa los objetivos en el espacio de manera uniforme"""
+
+        n = len(self.numero_objetivos_actual)
+        n_filas = 2
+        n_columnas = n/2
+        [filas,columnas] = self.espacio.size
+        amplitud_columnas = columnas/n_columnas
+
+        lista_objetivos = None
+
+        #Recorremos la lista de divisiones para generar los objetivos de ese punto.
+        for i,objetivos in enumerate(self.numero_objetivos_actual):
+            lista_objetivos_auxiliar = np.empty((objetivos, 2))
+            grupos = np.empty((self.numero_grupos[i], 2))
+            eje_x = np.array(((i%n_columnas)*amplitud_columnas,(i%n_columnas +1)*amplitud_columnas))
+            eje_y = np.array((columnas/2*(i%2),columnas/2*(i%2+1)))
+            if self.division[i] ==1:
+                    lista_objetivos_auxiliar[:,0] = np.random.uniform(*eje_x,
+                                                  size=objetivos)
+
+                    lista_objetivos_auxiliar[:,1] = np.random.uniform(*eje_y,
+                                                  size=objetivos)
+            elif self.division[i] ==2:
+
+                    grupos[:,0] = np.random.uniform(*eje_x,
+                                                  size=self.numero_grupos[i])
+
+                    grupos[:,1] = np.random.uniform(*eje_y,
+                                                      size=self.numero_grupos[i])
+                    if self.grupos is None:
+                        self.grupos = np.copy(grupos)
+                    else:
+                        self.grupos = np.vstack((self.grupos,np.copy(grupos)))
+
+                    nelem_x_grupo = (objetivos/self.numero_grupos[i]).astype(int)
+                    for i in range(self.numero_grupos[i]):
+                        a = i*nelem_x_grupo
+                        b = a + nelem_x_grupo
+                        lista_objetivos_auxiliar[a:b, 0] = np.random.normal(loc=grupos[i,0],
+                                                                   scale=self.std_grupos,
+                                                                   size=nelem_x_grupo)
+
+
+                        lista_objetivos_auxiliar[a:b, 1] = np.random.normal(loc=grupos[i,1],
+                                                                    scale=self.std_grupos,
+                                                                    size=nelem_x_grupo)
+            if lista_objetivos is None:
+                lista_objetivos = np.copy(lista_objetivos_auxiliar)
+            else:
+                lista_objetivos = np.vstack((lista_objetivos,lista_objetivos_auxiliar))
+
+
+        lista_objetivos[:,0] = np.mod(
+            lista_objetivos[:,0] - self.espacio.ejex[0],
+            self.espacio.size[0]) + self.espacio.ejex[0]
+
+        lista_objetivos[:,1] = np.mod(
+            lista_objetivos[:,1] - self.espacio.ejey[0],
+            self.espacio.size[1]) + self.espacio.ejey[0]
+
+        libres = np.full(np.sum(self.numero_objetivos_actual), self.usos)
+
+        return lista_objetivos, libres, np.sum(self.numero_objetivos_actual)
+
+    def plot_grupos(self, ax=None, color=None, alpha=None, r=1.96):
+        """Dibuja un sombreado centrados en los nucleos de puntos, con un radio
+            de r*std
+
+            Args:
+                ax: Axis de matplotlib (opcional)
+                color: Color de las zonas
+                alpha: Opacidad
+                r: Constante proporcional a los radios, por defecto 1.96 que
+                    correspondiente al cuantil 95 de la normal.
+        """
+
+        if ax is None:
+            ax = plt.gca()
+
+        if color is None:
+            color = ObjetivosAgrupados.color_grupos
+
+        if alpha is None:
+            alpha = ObjetivosAgrupados.opacidad_grupos
+
+
+        for grupo in self.grupos:
+            centros = self.espacio.coordenadas_equivalentes(grupo)
+
+            for centro in centros:
+                p = plt.Circle(centro, r*self.std_grupos, color=color,
+                               alpha=alpha)
+                ax.add_artist(p)
+
+        return ax

@@ -17,10 +17,10 @@ from simulador import LevyFlightActivo
 
 
 # Configuracion del espacio
-n = 30
+n = 100
 n_objetivos = 100 # Numero de objetivos
 size = (100.,100.) # Dimensiones del espacio
-t = np.linspace(50,1000,n)# Tiempo a simular
+t = np.linspace(500,10000,n)# Tiempo a simular
 inicial = (50,50) # Coordenadas iniciales (None para aleatorias)
 
 # Configuracion Plot
@@ -45,22 +45,18 @@ IC1 = np.zeros(n)
 repetida = np.zeros(n)
 ICrep = np.zeros(n)
 ICrep1 = np.zeros(n)
-#Variables para el ratio de area recorrida y repetida
-ratios = np.zeros(n)
-ICratio = np.zeros(n)
-ICratio1 = np.zeros(n)
+
 #Variables para el ratio de comidos y area.
 comida = np.zeros(n)
 ICcomida = np.zeros(n)
 ICcomida1 = np.zeros(n)
 for i,x in  enumerate(t):
-  for _ in range(100): # Porque llamar desde fuera si simular puede repetir bloques
-    modelo.simular(x)
+  
+    modelo.simular(x,100)
 
     # Porque no hacer estadistica para intervalos de confianza
     repetida[i] = np.mean(organismo.areaRep)
     area[i] = np.mean(organismo.areaRecorrida)
-    ratios[i] = np.mean(organismo.ratioRepeticion)
     comida[i] = np.mean(organismo.ratioExplotadosArea)
 
 
@@ -70,17 +66,11 @@ for i,x in  enumerate(t):
     ICrep[i] = np.percentile(organismo.areaRep,5)
     ICrep1[i] = np.percentile(organismo.areaRep,95)
 
-    ICratio[i] = np.percentile(organismo.ratioRepeticion,5)
-    ICratio1[i] = np.percentile(organismo.ratioRepeticion,95)
+    
 
     ICcomida[i] = np.percentile(organismo.ratioExplotadosArea,5)
     ICcomida[i] = np.percentile(organismo.ratioExplotadosArea,95)
 
-    # No necesario
-    organismo.areaRep = None
-    organismo.areaRecorrida = None
-    organismo.ratioRepeticion = None
-    organismo.ratioExplotadosArea = None
 
     #estadistica.inicializar(0,20)
 #Vamos a suavizar la curva restando las frecuencias no importantes
@@ -102,13 +92,6 @@ plt.plot(t,ICrep1,label="0.95%",color="r")
 plt.plot(lowess[:,0],lowess[:,1],'-',color = 'c',label="Suavizada")
 plt.title('repetida')
 
-lowess = sm.nonparametric.lowess(ratios, t, frac=0.1)
-plt.figure()
-plt.plot(t,ratios,label="media",color="k")
-plt.plot(t,ICratio,label="0.05%",color="r")
-plt.plot(t,ICratio1,label="0.95%",color="r")
-plt.plot(lowess[:,0],lowess[:,1],'-',color = 'c',label="Suavizada")
-plt.title('Ratio de repetida')
 lowess = sm.nonparametric.lowess(comida, t, frac=0.1)
 plt.figure()
 plt.plot(t,comida,label="media",color="k")
@@ -119,5 +102,5 @@ plt.title('Ratio de objetivos encontrados')
 plt.show()
 
 ## Guardar todo en el mismo vector ???
-DAT = np.stack((t,area,IC0,IC1,repetida,ICrep,ICrep1,ratios,ICratio,ICratio1,comida,ICcomida,ICcomida1))
+DAT = np.stack((t,area,IC0,IC1,repetida,ICrep,ICrep1,comida,ICcomida,ICcomida1))
 np.savetxt('./datos/areas',DAT,delimiter="\t")
