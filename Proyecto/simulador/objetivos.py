@@ -299,7 +299,7 @@ class ObjetivosRegenerables(Objetivos):
         los objetivos, usar ObjetivosUniformesRegenerables o ObjetivosAgrupadosRegenerables
         """
     
-    def __init__(self, numero_objetivos, espacio, tiempo_regeneracion=10):
+    def __init__(self, numero_objetivos, espacio, tiempo_regeneracion=25):
         
         self.tiempo_regeneracion = tiempo_regeneracion
         super().__init__(numero_objetivos, espacio)
@@ -364,7 +364,7 @@ class ObjetivosAgrupadosRegenerables(ObjetivosRegenerables):
     opacidad_grupos = .35
     
     def __init__(self, numero_objetivos_grupo, espacio, numero_grupos=1, std=1.,
-                 tiempo_regeneracion=10, grupos = None):
+                 tiempo_regeneracion=25, grupos = None):
         
         self.numero_objetivos_grupo = numero_objetivos_grupo
         self.numero_grupos=numero_grupos

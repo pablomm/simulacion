@@ -274,13 +274,13 @@ class OrganismoVFija(Organismo):
 
 class RandomWalkerVFija(OrganismoVFija):
 
-    def __init__(self, r_explotacion=1., velocidad=1., mu=0, std=1.,
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1., mu=0, std=1.,
                  stop_eat=False, posicion=None):
 
         self.std = std
         self.mu = mu
 
-        super().__init__(r_explotacion=r_explotacion, velocidad=velocidad, stop_eat=stop_eat,
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad, velocidad=velocidad, stop_eat=stop_eat,
                          posicion=posicion, name="Random Walker V Fija")
 
     def generar_movimiento(self):
@@ -291,7 +291,7 @@ class RandomWalkerVFija(OrganismoVFija):
 
 class LevyFlightVFija(OrganismoVFija):
 
-    def __init__(self, r_explotacion=1., velocidad=1., a=1.5, b=0., loc=0., scale=1.,
+    def __init__(self, r_explotacion=1., r_sensibilidad=0., velocidad=1., a=1.5, b=0., loc=0., scale=1.,
                  maximo=np.Inf, minimo=0, stop_eat=False, posicion=None):
 
         self.a = a
@@ -302,7 +302,7 @@ class LevyFlightVFija(OrganismoVFija):
         self.minimo = minimo
         self.levy = st.levy_stable(a, b, loc, scale)
 
-        super().__init__(r_explotacion=r_explotacion, velocidad=velocidad, stop_eat=stop_eat,
+        super().__init__(r_explotacion=r_explotacion, r_sensibilidad=r_sensibilidad, velocidad=velocidad, stop_eat=stop_eat,
                          posicion=posicion, name="Levy Flight V Fija")
 
     def generar_movimiento(self):
