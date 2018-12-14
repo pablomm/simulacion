@@ -204,3 +204,28 @@ class TiempoEnExplotar(Estadistica):
         for organismo in self.modelo:
             organismo.medias_tiempo_explotar = np.mean(organismo.tiempos_explotar)
             organismo.std_tiempo_explotar = np.std(organismo.tiempos_explotar)
+
+class EstadisticaAreaAcumulada(Estadistica):
+    def __init__(self, dx=None, dy=None, r=None):
+        """ Estadistica para calcular la matriz de areas acumuladas a lo largo de una serie de simulaciones.
+            Necesita que se agregue previamente al modelo EstadisticaArea.
+            """
+        super().__init__()
+        
+        self.dx = dx
+        self.dy = dy
+        self.radio_area = r
+    
+    def inicializar_simulaciones(self, n_simulacion, closing_time):
+        """ Inicializa el organismo antes de las simulaciones"""
+        
+        for organismo in self.modelo:
+            add_metodo(organismo, plot_mapa_calor_acumulado)
+            organismo.mapa_calor_acumulado = self.modelo.espacio.area_matrix(dx=self.dx,
+                                                                             dy=self.dy)
+
+    def finalizar(self, t, s):
+        """ Al final de cada simulacion guarda en la matriz"""
+        for organismo in self.modelo:
+            
+            organismo.mapa_calor_acumulado += organismo.MatrizArea

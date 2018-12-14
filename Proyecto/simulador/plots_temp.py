@@ -85,3 +85,10 @@ def plot_medias_tiempo(organismo, ax=None, param=None, plot_ci=True, **kwargs):
     if param:
             ax.legend()
     return ax
+
+def plot_mapa_calor_acumulado(organismo, ax=None, color="YlOrBr"):
+    if ax is None:
+        ax = plt.gca()
+    
+    ax.imshow(organismo.mapa_calor_acumulado.T, cmap="YlOrBr", origin="lower", interpolation='none', extent=[*organismo.espacio.ejex, *organismo.espacio.ejey])
+
