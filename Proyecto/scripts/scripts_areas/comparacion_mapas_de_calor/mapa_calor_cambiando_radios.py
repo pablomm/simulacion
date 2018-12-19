@@ -21,14 +21,14 @@ n_variaciones=6
 n_puntos_grupo = 25
 n_grupos = 4
 std_grupos = 5 # Desviacion estandar de los grupos
-grupos = [[25, 25] ,[25, 75], [75, 25], [75, 75]]
+grupos = [[50,50]]
 
 size = (100.,100.) # Dimensiones del espacio
 r = 1
 Radios = np.linspace(1, 10, n_variaciones) # Radio de explotacion
 t = 500 # Tiempo a simular
 
-maximo_levy = (min(size[0], size[1]))/2
+maximo_levy = (min(size[0], size[1]))
 tiempo_regen = 100
 
 # Configuracion Plot
@@ -41,11 +41,12 @@ fig.suptitle("Mapa calor acumulada Levy Flight Activo - Objetivos agrupados")
 espacio = EspacioToroidalFinito(*size)
 
 for i, R in enumerate(Radios):
-    print ("Radio de sensibilidad", r)
+    print ("Radio de sensibilidad", R)
     # LevyFlight Activo
     objetivos = ObjetivosAgrupados(n_puntos_grupo, espacio, n_grupos, std_grupos, grupos=grupos)
     modelo = Modelo(espacio, objetivos)
-    organismo = LevyFlightActivo(r_explotacion=r, r_sensibilidad=R)
+    #organismo = LevyFlightActivo(r_explotacion=r, r_sensibilidad=R, maximo=maximo_levy)
+    
     modelo.add_organismo(organismo)
     # Especificamos que estadisticas queremos recolectar
     modelo.add_estadistica(EstadisticaArea())
@@ -53,7 +54,7 @@ for i, R in enumerate(Radios):
 
     modelo.simular(t, n_simulaciones=n_simulaciones, stop_empty=False, verbose=1)
 
-    x = ax[int(np.floor(i/3)),i%3]
+    x = ax[i//3,i%3]
     organismo.plot_mapa_calor_acumulado(ax=x)
     x.set_title("R={}".format(R))
     #np.save("volcado", organismo.mapa_calor_acumulado)
