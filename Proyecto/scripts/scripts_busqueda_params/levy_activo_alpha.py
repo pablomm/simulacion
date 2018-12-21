@@ -15,7 +15,7 @@ from simulador import VariacionParametroBloques
 from simulador import LevyFlightActivo, RandomWalkerActivo, Organismo2Etapas
 
 n_simulaciones = 100
-n_variaciones = 10
+n_variaciones = 20
 n_alphas = 6
 
 # Configuracion del espacio
@@ -60,6 +60,6 @@ for i, a in enumerate(alphas):
 
     estadistica.plot_medias()
 
-labels = ["⍺={}".format(a) for a in alphas]
+labels = ["α={}".format(a) for a in alphas]
 ax.legend(labels)
 plt.show()
